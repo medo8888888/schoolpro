@@ -24,7 +24,7 @@ jobs:
           node-version: '20'
 
       - name: Install npm dependencies
-        run: npm install
+        run: npm ci
 
       - name: Sync Capacitor Android project
         run: npx cap sync android
