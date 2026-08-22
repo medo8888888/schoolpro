@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager Approvals</title>
+  <style>
+    :root { --bg:#071220; --panel:#0f213a; --panel2:#142f4c; --line:#21486f; --text:#f5f8fc; --muted:#8da2ba; --accent:#d6a63c; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:Inter,Arial,sans-serif; background:linear-gradient(135deg,#071220 0%,#0d1f34 100%); color:var(--text); display:grid; place-items:center; padding:20px; }
+    .card { width:min(760px,100%); background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:18px; }
+    h1 { margin:0 0 8px; font-size:26px; }
+    p { margin:0 0 14px; color:var(--muted); }
+    .top { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+    .link { text-decoration:none; border-radius:10px; padding:9px 12px; background:var(--panel2); color:var(--text); border:1px solid var(--line); font-weight:700; }
+    .list { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+    .list li { background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:10px; }
+    .status { margin-top:10px; color:var(--muted); font-size:12px; min-height:16px; }
+    .complaint-card { margin-top:16px; padding-top:16px; border-top:1px solid rgba(248,113,113,.38); }
+    .complaint-card h2 { margin:0 0 6px; font-size:18px; }
+    .complaint-card p { margin:0 0 12px; color:var(--muted); font-size:13px; }
+    .complaint-contact { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+    .complaint-contact a { color:var(--text); text-decoration:none; border:1px solid rgba(255,255,255,.18); border-radius:999px; padding:8px 11px; font-size:12px; font-weight:700; background:rgba(255,255,255,.06); }
+    .complaint-form { display:grid; gap:9px; }
+    .complaint-form select, .complaint-form textarea { width:100%; padding:10px; border-radius:9px; border:1px solid rgba(255,255,255,.16); background:rgba(0,0,0,.18); color:var(--text); }
+    .complaint-form textarea { min-height:90px; resize:vertical; }
+    .complaint-form button { justify-self:start; border:1px solid rgba(248,113,113,.5); border-radius:999px; padding:9px 13px; background:rgba(248,113,113,.18); color:var(--text); cursor:pointer; font-weight:800; }
+    .complaint-status { min-height:18px; color:var(--muted); font-size:12px; }
+  </style>
+  <script src="auth.js"></script>
+  <link rel="stylesheet" href="complaint.css" />
+  <script>
+    if (window.__FIELDTRACK_AUTH) {
+      window.__FIELDTRACK_AUTH.guardPage();
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.__FIELDTRACK_AUTH) {
+        window.__FIELDTRACK_AUTH.bindAuthPage();
+      }
+      var logoutBtn = document.getElementById('logoutBtn');
+      if (!logoutBtn || !window.__FIELDTRACK_AUTH) return;
+      logoutBtn.addEventListener('click', function () {
+        window.__FIELDTRACK_AUTH.clearSession();
+        sessionStorage.setItem('FIELDTRACK_AUTH_MESSAGE', 'Logged out successfully.');
+        window.location.replace('auth.html');
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h1>Manager Approval Queue</h1>
+    <p>Approve or decline users assigned to your manager account.</p>
+    <div class="top">
+      <a class="link" href="index.html">Home</a>
+      <button class="link" id="logoutBtn" type="button">Logout</button>
+    </div>
+    <ul class="list" id="managerPendingUsersList"></ul>
+    <div class="status" id="managerPendingStatus">Loading...</div>
+    <section class="complaint-card">
+      <h2>Report a complaint or issue</h2>
+      <p>Describe the problem and send it directly to support.</p>
+      <div class="complaint-contact">
+        <a id="complaintEmailLink" href="mailto:abassmahmoud@gmail.com">Email abassmahmoud@gmail.com</a>
+        <a id="complaintPhoneLink" href="tel:+97433775363">Call +974 33775363</a>
+        <a id="complaintWhatsappLink" href="https://wa.me/97433775363?text=Hello%2C%20I%20want%20to%20report%20a%20complaint.">WhatsApp +974 33775363</a>
+      </div>
+      <form class="complaint-form" id="complaintForm">
+        <select id="complaintCategory" aria-label="Complaint category">
+          <option value="Approval">Approval problem</option>
+          <option value="Attendance">Attendance problem</option>
+          <option value="Account">Account or login problem</option>
+          <option value="Other">Other complaint</option>
+        </select>
+        <textarea id="complaintDescription" placeholder="Describe what went wrong." required></textarea>
+        <div class="complaint-actions"><button type="submit" data-channel="email">Send by Email</button><button type="submit" data-channel="whatsapp">Send by WhatsApp</button></div>
+        <div class="complaint-status" id="complaintStatus">Your complaint will open in your email app.</div>
+      </form>
+    </section>
+  </div>
+  <script src="complaint.js"></script>
+</body>
+</html>

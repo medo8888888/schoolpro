@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employees</title>
+  <style>
+    :root { color-scheme: dark; --bg:#071220; --panel:#0f213a; --panel-2:#142f4c; --line:#21486f; --text:#f5f8fc; --muted:#8da2ba; --accent:#d6a63c; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,system-ui,sans-serif; background:linear-gradient(135deg,#071220 0%,#0d1f34 100%); color:var(--text); }
+    .shell { max-width:1200px; margin:0 auto; padding:24px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; padding:18px 20px; background:rgba(15,33,58,.9); border:1px solid var(--line); border-radius:20px; margin-bottom:20px; }
+    .brand { font-size:22px; font-weight:800; }
+    .brand span { color:var(--accent); }
+    .nav { display:flex; gap:10px; flex-wrap:wrap; }
+    .nav a { color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:999px; background:var(--panel-2); }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:18px; }
+    .notice-card { margin-bottom:16px; background:linear-gradient(135deg, rgba(56,189,248,.14), rgba(45,212,191,.1)); border:1px solid rgba(56,189,248,.35); }
+    .guide { margin:8px 0 0; padding-left:18px; color:var(--muted); }
+    .guide li { margin-bottom:6px; }
+    .guide strong { color:var(--text); }
+    .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+    .stat { background:var(--panel-2); border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .stat .k { color:var(--muted); font-size:11px; text-transform:uppercase; }
+    .stat .v { font-size:22px; font-weight:800; margin-top:4px; }
+    .table-wrap { overflow:auto; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px; border-bottom:1px solid rgba(255,255,255,.08); text-align:left; }
+    th { color:var(--muted); font-size:11px; text-transform:uppercase; }
+    @media (max-width:900px) {
+      .shell { padding:14px; }
+      .topbar { flex-direction:column; align-items:flex-start; gap:12px; padding:14px; }
+      .nav { width:100%; gap:8px; }
+      .nav a { flex:1 1 calc(50% - 8px); text-align:center; padding:10px 12px; }
+      .grid { grid-template-columns:1fr 1fr; }
+      .card { padding:14px; }
+    }
+    @media (max-width:520px) {
+      .nav a { flex-basis:100%; }
+      .grid { grid-template-columns:1fr; }
+      th, td { padding:10px 8px; font-size:12px; }
+    }
+  </style>
+
+  <script src='auth.js'></script>
+  <script>if (window.__FIELDTRACK_AUTH) { window.__FIELDTRACK_AUTH.guardPage(); }</script>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">Employee<span>Directory</span></div>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="manger.html">Manager</a>
+        <a href="employee-app.html">Employee Dashboard</a>
+        <a href="gps.html">GPS</a>
+        <a href="accountant.html">Accountant</a>
+      </div>
+    </div>
+
+    <section class="card notice-card">
+      <h3>Directory</h3>
+      <div style="color:var(--muted);font-size:13px;">Employee records will appear here once they are available.</div>
+      <ol class="guide">
+        <li><strong>Step 1:</strong> Review the empty directory state.</li>
+        <li><strong>Step 2:</strong> Add employee records when data is available.</li>
+        <li><strong>Step 3:</strong> Use Manager and GPS pages for actions and live tracking.</li>
+      </ol>
+    </section>
+
+    <section class="grid">
+      <div class="stat"><div class="k">Total employees</div><div class="v" id="totalCount">0</div></div>
+      <div class="stat"><div class="k">On site</div><div class="v" id="onSiteCount">0</div></div>
+      <div class="stat"><div class="k">Late</div><div class="v" id="lateCount">0</div></div>
+      <div class="stat"><div class="k">Remote</div><div class="v" id="remoteCount">0</div></div>
+    </section>
+
+    <section class="card">
+      <h3>Employees</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Name</th><th>ID</th><th>Email</th><th>Department</th><th>Role</th><th>Status</th><th>Shift</th></tr>
+          </thead>
+          <tbody id="employeeRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    async function fetchEmployees() {
+      try {
+        const token = localStorage.getItem('authToken') || '';
+        if (!token) throw new Error('Missing auth token');
+        const response = await fetch(`${window.__FIELDTRACK_API_BASE || 'http://localhost:4000'}/employees`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!response.ok) throw new Error('Employees fetch failed');
+        return await response.json();
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function renderEmployees(list) {
+      const employees = Array.isArray(list) ? list : [];
+      const onSite = employees.filter((item) => item.status === 'On site' || item.status === 'Present' || item.status === 'active').length;
+      const late = employees.filter((item) => item.status === 'Late').length;
+      const remote = employees.filter((item) => item.status === 'Remote').length;
+
+      document.getElementById('totalCount').textContent = employees.length;
+      document.getElementById('onSiteCount').textContent = onSite;
+      document.getElementById('lateCount').textContent = late;
+      document.getElementById('remoteCount').textContent = remote;
+
+      document.getElementById('employeeRows').innerHTML = employees.map((item) => `
+        <tr>
+          <td>${item.name || '-'}</td>
+          <td>${item.id || '-'}</td>
+          <td>${item.email || '-'}</td>
+          <td>${item.department || '-'}</td>
+          <td>${item.role || '-'}</td>
+          <td>${item.status || '-'}</td>
+          <td>${item.shift || '-'}</td>
+        </tr>
+      `).join('');
+    }
+
+    fetchEmployees().then(renderEmployees);
+  </script>
+</body>
+</html>
+

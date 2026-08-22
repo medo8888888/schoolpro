@@ -1,0 +1,14 @@
+node_modules/
+backend/node_modules/
+.gradle/
+android/.gradle/
+android/build/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/local.properties
+ios/Pods/
+ios/App/DerivedData/
+*.log
+.env
+.env.*
+!.env.example

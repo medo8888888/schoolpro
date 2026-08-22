@@ -1,0 +1,410 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Operations Center</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root { color-scheme: dark; --bg:#071220; --panel:#0f213a; --panel-2:#142f4c; --line:#21486f; --text:#f5f8fc; --muted:#8da2ba; --accent:#d6a63c; --accent-2:#2dd4bf; --danger:#ff6b6b; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,system-ui,sans-serif; background:linear-gradient(135deg,#071220 0%,#0d1f34 100%); color:var(--text); }
+    .shell { max-width:1320px; margin:0 auto; padding:24px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; padding:18px 20px; background:rgba(15,33,58,.9); border:1px solid var(--line); border-radius:20px; margin-bottom:20px; }
+    .brand { font-size:22px; font-weight:800; }
+    .brand span { color:var(--accent); }
+    .nav { display:flex; gap:10px; flex-wrap:wrap; }
+    .nav a { color:var(--muted); text-decoration:none; padding:8px 12px; border-radius:999px; background:var(--panel-2); }
+    .arrow-nav { display:flex; justify-content:space-between; gap:10px; margin:-8px 0 14px; }
+    .arrow-link { text-decoration:none; color:var(--text); padding:9px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.06); font-weight:700; }
+    .arrow-link:hover { background:rgba(255,255,255,.12); }
+    .hero { display:grid; grid-template-columns:1.1fr .9fr; gap:16px; margin-bottom:16px; }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:18px; }
+    .map-frame { width:100%; height:100%; min-height:280px; border:0; border-radius:16px; }
+    .gps-status { margin-top:10px; color:var(--muted); font-size:13px; }
+    .scanner-card { display:flex; flex-direction:column; gap:12px; }
+    .scanner-btn { border:none; border-radius:999px; padding:10px 14px; font-weight:700; cursor:pointer; background:var(--accent); color:#071220; }
+    .scanner-btn.secondary { background:var(--accent-2); color:#071220; }
+    .scanner-pill { display:inline-block; padding:6px 10px; border-radius:999px; background:rgba(45,212,191,.16); color:var(--accent-2); font-size:11px; font-weight:700; width:fit-content; }
+    .scanner-output { padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); color:var(--muted); font-size:13px; }
+    .hero-card { background:linear-gradient(135deg, rgba(45,212,191,.16), rgba(15,33,58,.95)); }
+    .hero-card h1 { margin:0 0 8px; font-size:28px; }
+    .hero-card p { margin:0; color:var(--muted); line-height:1.6; }
+    .kpi { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+    .kpi .box { background:var(--panel-2); border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .kpi .box .label { color:var(--muted); font-size:11px; text-transform:uppercase; }
+    .kpi .box .value { font-size:24px; font-weight:800; margin-top:4px; }
+    .grid { display:grid; grid-template-columns:1.1fr .9fr; gap:16px; }
+    .list { list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px; }
+    .pill { display:inline-block; margin-top:8px; padding:6px 10px; border-radius:999px; background:rgba(214,166,60,.12); color:var(--accent); font-size:11px; font-weight:700; }
+    .list li { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); padding:10px 12px; border-radius:12px; color:var(--muted); }
+    .list li strong { color:var(--text); display:block; margin-bottom:4px; }
+    #locationList li { padding:0; overflow:hidden; }
+    #locationList li.selected { border-color:var(--accent-2); background:rgba(45,212,191,.12); }
+    .location-button { width:100%; padding:10px 12px; border:0; background:transparent; color:var(--muted); text-align:left; font:inherit; cursor:pointer; }
+    .location-button:hover, .location-button:focus-visible { background:rgba(255,255,255,.07); outline:none; }
+    .location-button strong { color:var(--text); display:block; margin-bottom:4px; }
+    .notice-card { margin-bottom:16px; background:linear-gradient(135deg, rgba(56,189,248,.14), rgba(45,212,191,.1)); border:1px solid rgba(56,189,248,.35); }
+    .steps { margin:10px 0 0; padding-left:18px; color:var(--muted); }
+    .steps li { margin-bottom:6px; }
+    .steps strong { color:var(--text); }
+    .legend-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+    .legend-chip { padding:5px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.2); font-size:11px; color:var(--text); }
+    .legend-chip.info { background:rgba(56,189,248,.14); border-color:rgba(56,189,248,.4); }
+    .legend-chip.warn { background:rgba(251,191,36,.14); border-color:rgba(251,191,36,.4); }
+    .legend-chip.ok { background:rgba(45,212,191,.14); border-color:rgba(45,212,191,.4); }
+    .mini-map { position:relative; height:180px; border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.08); background:linear-gradient(135deg,#06101d 0%,#0f213b 100%); margin-top:10px; }
+    .mini-map .map-view { width:100%; height:100%; }
+    .mini-map .tag { position:absolute; left:12px; bottom:12px; background:rgba(7,18,32,.8); color:var(--muted); padding:8px 10px; border-radius:999px; font-size:10px; z-index:500; }
+    @media (max-width:900px) {
+      .shell { padding:14px; }
+      .topbar { flex-direction:column; align-items:flex-start; gap:12px; padding:14px; }
+      .nav { width:100%; gap:8px; }
+      .nav a { flex:1 1 calc(50% - 8px); text-align:center; padding:10px 12px; }
+      .arrow-nav { flex-direction:column; margin:0 0 14px; }
+      .arrow-link { text-align:center; padding:10px 12px; }
+      .hero, .grid { grid-template-columns:1fr; }
+      .kpi { grid-template-columns:1fr 1fr; }
+      .card { padding:14px; }
+    }
+    @media (max-width:520px) {
+      .nav a { flex-basis:100%; }
+      .kpi { grid-template-columns:1fr; }
+    }
+  </style>
+
+  <script src='auth.js'></script>
+  <script>if (window.__FIELDTRACK_AUTH) { window.__FIELDTRACK_AUTH.guardPage(); }</script>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">Operations<span>Center</span></div>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="manager-how-to-use.html">How to Use</a>
+        <a href="employee-app.html">Employee Dashboard</a>
+        <a href="manger.html">Manager</a>
+        <a href="employees.html">Employees</a>
+        <a href="accountant.html">Accountant</a>
+      </div>
+    </div>
+
+    <div class="arrow-nav" aria-label="Page arrows">
+      <a class="arrow-link" href="manger.html">&larr; Manager</a>
+      <a class="arrow-link" href="employees.html">Employees &rarr;</a>
+    </div>
+
+    <section class="card notice-card">
+      <h3>GPS Command Center</h3>
+      <div class="gps-status">Use this page to review live field activity, alerts, and visit pulse from the connected workspace.</div>
+      <ol class="steps">
+        <li><strong>Step 1:</strong> Review KPI counters for On site, Alerts, Sites covered, and Avg hours.</li>
+        <li><strong>Step 2:</strong> Watch live locations and field visits streams.</li>
+        <li><strong>Step 3:</strong> Check alerts for late or flagged activity.</li>
+      </ol>
+      <div class="legend-row">
+        <span class="legend-chip info">Live pulse = current movement snapshot</span>
+        <span class="legend-chip warn">Alerts = late or flagged events</span>
+        <span class="legend-chip ok">Visits = latest field check-ins</span>
+      </div>
+    </section>
+
+    <section class="hero">
+      <div class="card hero-card">
+        <h1>Operations view built for field oversight.</h1>
+        <p>Watch live site movement, attendance activity, and verification signals from a single command-style surface.</p>
+      </div>
+      <div class="card">
+        <h3>Live pulse</h3>
+        <div class="pill">GPS-verified site tracking</div>
+        <div class="mini-map">
+          <iframe id="liveMapFrame" class="map-frame" src="https://www.google.com/maps?q=25.2854,51.5310&z=14&output=embed"></iframe>
+          <div class="tag" id="mapTag">Waiting for employee GPS</div>
+        </div>
+        <div class="gps-status" id="gpsStatus">Waiting for employee GPS data...</div>
+        <button type="button" class="scanner-btn secondary" style="margin-top:8px;" onclick="locateMyDevice()">Locate My Device (precision test)</button>
+      </div>
+    </section>
+
+    <section class="kpi">
+      <div class="box"><div class="label">On site</div><div class="value" id="siteCount">0</div></div>
+      <div class="box"><div class="label">Alerts</div><div class="value" id="alertCount">0</div></div>
+      <div class="box"><div class="label">Sites covered</div><div class="value" id="siteCovered">0</div></div>
+      <div class="box"><div class="label">Avg hours</div><div class="value" id="avgHours">0</div></div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h3>Live locations</h3>
+        <div class="pill">GPS-verified site tracking</div>
+        <ul class="list" id="locationList"></ul>
+      </div>
+      <div class="card">
+        <h3>Field visits</h3>
+        <div class="pill">Latest check-ins and site movement</div>
+        <ul class="list" id="visitsList"></ul>
+        <h3 style="margin-top:14px;">Alerts</h3>
+        <div class="pill">Late arrivals and flagged events</div>
+        <ul class="list" id="alertsList"></ul>
+      </div>
+    </section>
+  </div>
+  <script>
+    let visibleEmployees = [];
+    let selectedEmployeeName = '';
+    let usingMyDevice = false;
+    const MY_DEVICE_LOCATION_KEY = 'FIELDTRACK_MY_DEVICE_LOCATION';
+
+    function saveMyDeviceLocation(position) {
+      try {
+        localStorage.setItem(MY_DEVICE_LOCATION_KEY, JSON.stringify({
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          time: new Date().toISOString()
+        }));
+      } catch (error) {}
+    }
+
+    function loadMyDeviceLocation() {
+      try {
+        const raw = localStorage.getItem(MY_DEVICE_LOCATION_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function hashNumber(value) {
+      const text = String(value || 'employee');
+      let hash = 0;
+      for (let index = 0; index < text.length; index += 1) {
+        hash = text.charCodeAt(index) + ((hash << 5) - hash);
+      }
+      return Math.abs(hash);
+    }
+
+    function ensureCoordinates(employee, gpsPoint) {
+      if (gpsPoint && gpsPoint.coords && Number.isFinite(Number(gpsPoint.coords.lat)) && Number.isFinite(Number(gpsPoint.coords.lng))) {
+        return { lat: Number(gpsPoint.coords.lat), lng: Number(gpsPoint.coords.lng), gpsTime: gpsPoint.time, gpsSource: gpsPoint.source };
+      }
+      const lat = Number(employee.lat ?? employee.latitude ?? employee.locationLat ?? employee.location?.lat);
+      const lng = Number(employee.lng ?? employee.longitude ?? employee.locationLng ?? employee.location?.lng);
+      if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+      const seed = hashNumber(employee.id || employee.username || employee.name);
+      return {
+        lat: 25.2854 + ((seed % 100) - 50) / 2500,
+        lng: 51.5310 + (((seed >> 3) % 100) - 50) / 2500
+      };
+    }
+
+    function safeJsonReadLocal(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        const parsed = raw ? JSON.parse(raw) : fallback;
+        return parsed && typeof parsed === 'object' ? parsed : fallback;
+      } catch (error) {
+        return fallback;
+      }
+    }
+
+    function parseCoordinatePair(value) {
+      if (!value) return null;
+      const parts = String(value).split(',').map((item) => Number(item.trim()));
+      if (parts.length < 2 || !Number.isFinite(parts[0]) || !Number.isFinite(parts[1])) return null;
+      return { lat: parts[0], lng: parts[1] };
+    }
+
+    function collectLatestEmployeeGpsPoints() {
+      const byEmployee = {};
+      const mergeLatest = (employee, point) => {
+        const key = String(employee || '').trim().toLowerCase();
+        if (!key || !point || !point.coords) return;
+        const existing = byEmployee[key];
+        if (!existing || new Date(point.time || 0).getTime() > new Date(existing.time || 0).getTime()) {
+          byEmployee[key] = point;
+        }
+      };
+
+      const visitStore = safeJsonReadLocal('EMPLOYEE_APP_VISITATIONS', {});
+      Object.keys(visitStore || {}).forEach((employee) => {
+        (Array.isArray(visitStore[employee]) ? visitStore[employee] : []).forEach((item) => {
+          const coords = parseCoordinatePair(item && item.location);
+          if (coords) mergeLatest(employee, { coords, time: item.time, source: 'Visitation' });
+        });
+      });
+
+      const assignmentStore = safeJsonReadLocal('FIELDTRACK_ASSIGNMENTS', {});
+      Object.keys(assignmentStore || {}).forEach((employee) => {
+        (Array.isArray(assignmentStore[employee]) ? assignmentStore[employee] : []).forEach((item) => {
+          const coords = item && item.arrivedCoords;
+          if (coords && Number.isFinite(Number(coords.lat)) && Number.isFinite(Number(coords.lng)) && item.arrivedAt) {
+            mergeLatest(employee, { coords: { lat: Number(coords.lat), lng: Number(coords.lng) }, time: item.arrivedAt, source: 'Arrived' });
+          }
+        });
+      });
+
+      return byEmployee;
+    }
+
+    function sampleBestPosition(durationMs) {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) { reject({ message: 'Geolocation is not supported by this browser.' }); return; }
+        if (window.isSecureContext === false) { reject({ message: 'Location needs HTTPS or localhost. Open this page through the local server (http://localhost), not as a file.' }); return; }
+        let best = null;
+        let lastError = null;
+        const watchId = navigator.geolocation.watchPosition((position) => {
+          if (!best || position.coords.accuracy < best.coords.accuracy) best = position;
+        }, (error) => { lastError = error; }, { enableHighAccuracy: true, maximumAge: 0, timeout: durationMs });
+        setTimeout(() => {
+          navigator.geolocation.clearWatch(watchId);
+          if (best) { resolve(best); return; }
+          if (lastError && lastError.code === 1) { reject({ message: 'Location permission denied. Allow location access for this site in your browser settings.' }); return; }
+          if (lastError && lastError.code === 2) { reject({ message: 'Location unavailable. Turn on GPS/location services for this device/browser.' }); return; }
+          reject({ message: 'Timed out waiting for a GPS fix. Try again outdoors with a clearer sky view.' });
+        }, durationMs);
+      });
+    }
+
+    function locateMyDevice() {
+      const statusNode = document.getElementById('gpsStatus');
+      if (statusNode) statusNode.textContent = 'Getting your precise device location (up to 6s)...';
+      sampleBestPosition(6000).then((position) => {
+        selectedEmployeeName = '';
+        usingMyDevice = true;
+        saveMyDeviceLocation(position);
+        updateMapLocation(position.coords.latitude, position.coords.longitude, 'My device', position.coords.accuracy);
+        document.getElementById('mapTag').textContent = 'My device (precision test, not an employee)';
+      }).catch((error) => {
+        if (statusNode) statusNode.textContent = (error && error.message) || 'Location access was denied or unavailable.';
+      });
+    }
+
+    function updateMapLocation(lat, lng, employeeName = '', accuracyMeters = null) {
+      const frame = document.getElementById('liveMapFrame');
+      if (frame) {
+        frame.src = `https://www.google.com/maps?q=${lat},${lng}&z=17&output=embed`;
+      }
+      const status = document.getElementById('gpsStatus');
+      if (status) {
+        const accuracyText = Number.isFinite(accuracyMeters) ? ` (accuracy +/-${Math.round(accuracyMeters)}m)` : '';
+        status.textContent = employeeName
+          ? `Showing ${employeeName}'s location: ${lat.toFixed(6)}, ${lng.toFixed(6)}${accuracyText}`
+          : `Location: ${lat.toFixed(6)}, ${lng.toFixed(6)}${accuracyText}`;
+      }
+    }
+
+    function selectEmployee(index) {
+      const employee = visibleEmployees[index];
+      if (!employee) return;
+      usingMyDevice = false;
+      selectedEmployeeName = employee.name;
+      updateMapLocation(employee.lat, employee.lng, employee.name);
+      const when = employee.gpsTime ? new Date(employee.gpsTime).toLocaleString() : 'unknown time';
+      document.getElementById('mapTag').textContent = `${employee.name} - ${employee.status} - ${employee.gpsSource || 'last known'} at ${when}`;
+      document.querySelectorAll('#locationList li').forEach((item, itemIndex) => {
+        item.classList.toggle('selected', itemIndex === index);
+      });
+    }
+
+    function renderEmployeeLocations(employees) {
+      const gpsPoints = collectLatestEmployeeGpsPoints();
+      visibleEmployees = employees.map(employee => {
+        const key = String(employee.username || employee.name || '').trim().toLowerCase();
+        return { ...employee, ...ensureCoordinates(employee, gpsPoints[key]) };
+      });
+      const list = document.getElementById('locationList');
+      list.replaceChildren();
+      visibleEmployees.forEach((employee, index) => {
+        const item = document.createElement('li');
+        const button = document.createElement('button');
+        const name = document.createElement('strong');
+        button.type = 'button';
+        button.className = 'location-button';
+        button.setAttribute('aria-label', `Show ${employee.name} on map`);
+        name.textContent = employee.name;
+        button.append(name, document.createTextNode(`${employee.department} - ${employee.status}`));
+        button.addEventListener('click', () => selectEmployee(index));
+        item.appendChild(button);
+        list.appendChild(item);
+      });
+
+      if (!selectedEmployeeName && !usingMyDevice) {
+        let bestIndex = -1;
+        let bestTime = 0;
+        visibleEmployees.forEach((employee, index) => {
+          const time = employee.gpsTime ? new Date(employee.gpsTime).getTime() : 0;
+          if (time > bestTime) { bestTime = time; bestIndex = index; }
+        });
+        if (bestIndex >= 0) {
+          selectEmployee(bestIndex);
+        } else {
+          document.getElementById('gpsStatus').textContent = 'No employee GPS points yet. Ask an employee to tap Refresh Location or Arrived.';
+        }
+      }
+    }
+
+    async function load() {
+      try {
+        const token = localStorage.getItem('authToken') || '';
+        const [attendanceResponse, employeesResponse] = await Promise.all([
+          fetch(`${window.__FIELDTRACK_API_BASE || 'http://localhost:4000'}/attendance`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${window.__FIELDTRACK_API_BASE || 'http://localhost:4000'}/employees`, { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+
+        const attendance = attendanceResponse.ok ? await attendanceResponse.json() : [];
+        const employees = employeesResponse.ok ? await employeesResponse.json() : [];
+        const normalizedEmployees = Array.isArray(employees) ? employees : [];
+        const normalizedAttendance = Array.isArray(attendance) ? attendance : [];
+        const onSite = normalizedEmployees.filter(item => item.status === 'On site' || item.status === 'active' || item.status === 'Present').length;
+        const alerts = normalizedEmployees.filter(item => item.status === 'Late').length;
+        const visitItems = normalizedAttendance.filter(item => {
+          const type = String(item.type || '').toLowerCase();
+          return type.includes('clock') || type.includes('visit');
+        });
+        const alertItems = normalizedAttendance.filter(item => {
+          const status = String(item.status || '').toLowerCase();
+          const type = String(item.type || '').toLowerCase();
+          return status.includes('flag') || status.includes('late') || type.includes('late');
+        });
+
+        document.getElementById('siteCount').textContent = onSite;
+        document.getElementById('alertCount').textContent = alertItems.length + alerts;
+        document.getElementById('siteCovered').textContent = Math.max(1, onSite + alertItems.length + alerts);
+        document.getElementById('avgHours').textContent = '—';
+        document.getElementById('mapTag').textContent = normalizedEmployees.length ? `Live ${onSite} - Alerts ${alertItems.length + alerts}` : 'Waiting for backend data';
+        renderEmployeeLocations(normalizedEmployees);
+        document.getElementById('visitsList').innerHTML = visitItems.length
+          ? visitItems.slice(0, 8).map(item => `<li><strong>${item.type || 'Visit'}</strong>${item.employeeName || item.employeeId || 'Staff'} - ${item.time || 'Now'} - ${item.status || 'Saved'}</li>`).join('')
+          : '<li><strong>No visits yet</strong>Clock-ins and site activity will appear here.</li>';
+        document.getElementById('alertsList').innerHTML = alertItems.length
+          ? alertItems.slice(0, 8).map(item => `<li><strong>${item.type || 'Alert'}</strong>${item.employeeName || item.employeeId || 'Staff'} - ${item.time || 'Now'} - ${item.status || 'Flagged'}</li>`).join('')
+          : '<li><strong>No alerts</strong>No flagged activity yet.</li>';
+        document.getElementById('gpsStatus').textContent = normalizedEmployees.length ? 'Live backend data loaded.' : 'No employee data yet. Sign in and create activity to populate this page.';
+      } catch (error) {
+        document.getElementById('siteCount').textContent = '0';
+        document.getElementById('alertCount').textContent = '0';
+        document.getElementById('siteCovered').textContent = '0';
+        document.getElementById('avgHours').textContent = '—';
+        document.getElementById('mapTag').textContent = 'Waiting for backend data';
+        renderEmployeeLocations([]);
+        document.getElementById('visitsList').innerHTML = '<li><strong>No visits yet</strong>Clock-ins and site activity will appear here.</li>';
+        document.getElementById('alertsList').innerHTML = '<li><strong>No alerts</strong>No flagged activity yet.</li>';
+        document.getElementById('gpsStatus').textContent = 'No employee data yet. Sign in and create activity to populate this page.';
+      }
+    }
+    const savedDeviceLocation = loadMyDeviceLocation();
+    if (savedDeviceLocation && Number.isFinite(Number(savedDeviceLocation.lat)) && Number.isFinite(Number(savedDeviceLocation.lng))) {
+      usingMyDevice = true;
+      updateMapLocation(Number(savedDeviceLocation.lat), Number(savedDeviceLocation.lng), 'My device', savedDeviceLocation.accuracy);
+      document.getElementById('mapTag').textContent = 'My device (precision test, not an employee) - restored';
+    } else {
+      updateMapLocation(25.2854, 51.5310);
+    }
+    load();
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,9 @@
+﻿{
+  "name": "workforce-os",
+  "short_name": "WorkforceOS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#071220",
+  "theme_color": "#0f213a",
+  "icons": []
+}

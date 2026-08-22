@@ -1,0 +1,9 @@
+// Explicitly register the app module
+include ':app'
+
+// Include Capacitor plugins
+include ':capacitor-cordova-android-plugins'
+project(':capacitor-cordova-android-plugins').projectDir = new File('./capacitor-cordova-android-plugins/')
+
+// Apply Capacitor settings
+apply from: 'capacitor.settings.gradle'

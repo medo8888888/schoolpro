@@ -1,0 +1,57 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Home</title>
+  <style>
+    :root { --bg:#071220; --panel:#0f213a; --line:#21486f; --text:#f5f8fc; --muted:#8da2ba; --accent:#d6a63c; }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: linear-gradient(135deg, #071220 0%, #0d1f34 100%); color: var(--text); font-family: Inter, Arial, sans-serif; padding: 20px; }
+    .card { width: min(520px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+    h1 { margin: 0 0 10px; font-size: 26px; }
+    p { margin: 0 0 14px; color: var(--muted); }
+    .btn { border: none; border-radius: 10px; padding: 11px 12px; background: var(--accent); color: #071220; font-weight: 800; cursor: pointer; }
+    .links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+    .link { display: inline-flex; justify-content: center; text-decoration: none; border-radius: 10px; padding: 11px 12px; background: #142f4c; color: var(--text); border: 1px solid var(--line); font-weight: 700; }
+  </style>
+  <script src="auth.js"></script>
+  <script>
+    if (window.__FIELDTRACK_AUTH) {
+      window.__FIELDTRACK_AUTH.guardPage();
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (!logoutBtn || !window.__FIELDTRACK_AUTH) return;
+
+      const approvalsLink = document.getElementById('approvalsLink');
+      const managerApprovalsLink = document.getElementById('managerApprovalsLink');
+      const session = window.__FIELDTRACK_AUTH.getSession ? window.__FIELDTRACK_AUTH.getSession() : null;
+      const role = String((session && session.role) || '').toLowerCase();
+      if (approvalsLink) approvalsLink.style.display = role === 'admin' ? 'inline-flex' : 'none';
+      if (managerApprovalsLink) managerApprovalsLink.style.display = role === 'admin' ? 'none' : 'inline-flex';
+
+      logoutBtn.addEventListener('click', function () {
+        window.__FIELDTRACK_AUTH.clearSession();
+        sessionStorage.setItem('FIELDTRACK_AUTH_MESSAGE', 'Logged out successfully.');
+        window.location.replace('auth.html');
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome</h1>
+    <p>You are logged in. Open any module below.</p>
+    <div class="links">
+      <a class="link" href="manger.html">Manager</a>
+      <a class="link" href="employees.html">Employees</a>
+      <a class="link" href="employee-app.html">Employee</a>
+      <a class="link" href="gps.html">GPS</a>
+      <a class="link" id="approvalsLink" href="approvals.html" style="display:none;">Admin Approvals</a>
+      <a class="link" id="managerApprovalsLink" href="manager-approvals.html" style="display:none;">Manager Approvals</a>
+    </div>
+    <button id="logoutBtn" class="btn" type="button">Logout</button>
+  </div>
+</body>
+</html>

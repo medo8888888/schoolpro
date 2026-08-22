@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Alkashaf Workforce</string>
+    <string name="title_activity_main">Alkashaf Workforce</string>
+    <string name="package_name">com.Alkashaf.app</string>
+    <string name="custom_url_scheme">com.Alkashaf.app</string>
+</resources>

@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manager How To Use</title>
+  <style>
+    :root { color-scheme: dark; --bg:#071220; --panel:#0f213a; --panel-2:#142f4c; --line:#21486f; --text:#f5f8fc; --muted:#8da2ba; --accent:#d6a63c; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:Inter,system-ui,sans-serif; background:linear-gradient(135deg,#071220 0%,#0d1f34 100%); color:var(--text); }
+    .shell { max-width:1100px; margin:0 auto; padding:24px; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 18px; background:rgba(15,33,58,.9); border:1px solid var(--line); border-radius:18px; margin-bottom:16px; }
+    .brand { font-size:22px; font-weight:800; }
+    .brand span { color:var(--accent); }
+    .nav { display:flex; gap:8px; flex-wrap:wrap; }
+    .nav a { text-decoration:none; color:var(--muted); padding:8px 12px; border-radius:999px; background:var(--panel-2); }
+    .card { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:18px; margin-bottom:14px; }
+    h1 { margin:0 0 8px; font-size:28px; }
+    h2 { margin:0 0 8px; font-size:20px; }
+    p { margin:0; color:var(--muted); line-height:1.6; }
+    .btn-row { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+    .btn { border:none; border-radius:999px; padding:10px 14px; font-weight:700; cursor:pointer; background:rgba(214,166,60,.18); color:#fff; }
+    .grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+    .hero { display:grid; grid-template-columns:1.1fr .9fr; gap:12px; margin-bottom:14px; }
+    .hero-map { min-height:220px; border-radius:16px; border:1px solid var(--line); background:
+      radial-gradient(circle at 20% 20%, rgba(45,212,191,.18), transparent 18%),
+      radial-gradient(circle at 72% 38%, rgba(214,166,60,.18), transparent 16%),
+      linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      position:relative; overflow:hidden; }
+    .hero-map::before { content:''; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px); background-size:32px 32px; opacity:.35; }
+    .map-pin { position:absolute; width:14px; height:14px; border-radius:999px; background:#d6a63c; border:2px solid #071220; box-shadow:0 0 0 6px rgba(214,166,60,.16); }
+    .map-label { position:absolute; padding:6px 10px; border-radius:999px; background:rgba(15,33,58,.92); border:1px solid var(--line); font-size:12px; color:var(--text); }
+    .kpi-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-top:12px; }
+    .kpi { background:var(--panel-2); border:1px solid var(--line); border-radius:14px; padding:12px; }
+    .kpi .label { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.06em; }
+    .kpi .value { margin-top:4px; font-size:24px; font-weight:800; }
+    .preview-list { list-style:none; padding:0; margin:10px 0 0; display:grid; gap:8px; }
+    .preview-list li { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); border-radius:12px; padding:10px 12px; color:var(--muted); }
+    .preview-list strong { display:block; color:var(--text); margin-bottom:4px; }
+    .steps { margin:8px 0 0; padding-left:18px; color:var(--muted); }
+    .steps li { margin-bottom:6px; }
+    .steps strong { color:var(--text); }
+    @media (max-width:900px) {
+      .shell { padding:14px; }
+      .topbar { flex-direction:column; align-items:flex-start; padding:14px; }
+      .nav { width:100%; gap:8px; }
+      .nav a { flex:1 1 calc(50% - 8px); text-align:center; padding:10px 12px; }
+      .card { padding:14px; }
+      h1 { font-size:24px; }
+      .grid, .hero, .kpi-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width:520px) {
+      .nav a { flex-basis:100%; }
+      .btn-row .btn { width:100%; justify-content:center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">Manager <span>How To Use</span></div>
+      <div class="nav">
+        <a href="index.html">Home</a>
+        <a href="manger.html">Manager</a>
+        <a href="gps.html">GPS</a>
+        <a href="employee-app.html">Employee</a>
+      </div>
+    </div>
+
+    <section class="card">
+      <h1>Guide For The Pages You Use</h1>
+      <p>Use this page only for the manager flow you actually use: Manager, GPS, and Employee.</p>
+      <div class="btn-row">
+        <a class="btn" href="manger.html" style="text-decoration:none;display:inline-flex;align-items:center;">Go To Manager</a>
+        <a class="btn" href="gps.html" style="text-decoration:none;display:inline-flex;align-items:center;">Go To GPS</a>
+        <a class="btn" href="employee-app.html" style="text-decoration:none;display:inline-flex;align-items:center;">Go To Employee</a>
+      </div>
+    </section>
+
+    <section class="hero">
+      <div class="card">
+        <h2>Manager Map and Morning Overview</h2>
+        <p>This is the page where you see the live operational view, including movement and the morning summary.</p>
+        <div class="hero-map">
+          <span class="map-pin" style="top:28%;left:22%;"></span>
+          <span class="map-label" style="top:22%;left:28%;">Map view • live route</span>
+          <span class="map-pin" style="top:52%;left:64%;"></span>
+          <span class="map-label" style="top:46%;left:42%;">Morning overview • status</span>
+          <span class="map-pin" style="top:70%;left:40%;"></span>
+          <span class="map-label" style="top:74%;left:46%;">Project activity • team</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Morning Overview</h2>
+        <p>Use this section to review the arrival queue, active staff, and field activity before you assign more work.</p>
+        <div class="kpi-grid">
+          <div class="kpi"><div class="label">Active staff</div><div class="value">Live</div></div>
+          <div class="kpi"><div class="label">Late arrivals</div><div class="value">Check</div></div>
+          <div class="kpi"><div class="label">Pending</div><div class="value">Review</div></div>
+        </div>
+        <ul class="preview-list">
+          <li><strong>Map view</strong>helps you see where staff are positioned.</li>
+          <li><strong>Overview cards</strong>show attendance, late arrivals, and pending items.</li>
+          <li><strong>Project planning</strong>comes next after the overview is clear.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>1. Map and Morning Overview</h2>
+        <p>Open the Manager page and review the live map plus the morning overview first.</p>
+        <ol class="steps">
+          <li><strong>Check the map</strong>to see which staff are active and where they are.</li>
+          <li><strong>Review the morning overview</strong>for attendance, late arrivals, and pending items.</li>
+          <li><strong>Use those signals</strong>before you create or change project work.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h2>2. Add a Project</h2>
+        <p>Use the Project Visit Targets section to add a new project target.</p>
+        <ol class="steps">
+          <li><strong>Fill in client name and project name.</strong></li>
+          <li><strong>Enter engineer usernames</strong>and the visit date/time.</li>
+          <li><strong>Set the required visits and price</strong>then save the project target.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h2>3. Remove or Manage a Project</h2>
+        <p>Projects can be maintained from the same target list.</p>
+        <ol class="steps">
+          <li><strong>Use the target card actions</strong>to terminate, soft delete, or recover a project.</li>
+          <li><strong>Reassign engineers</strong>if the visit owner changes.</li>
+          <li><strong>Remove an engineer</strong>from the project if they are no longer assigned.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h2>4. Assign Visitation</h2>
+        <p>After the project exists, assign the visit to the employee.</p>
+        <ol class="steps">
+          <li><strong>Select the project</strong>from the Add Visitation section.</li>
+          <li><strong>Choose the employee(s)</strong>who should receive it.</li>
+          <li><strong>Save the visit</strong>and it will appear in the scheduled visits list.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Detailed Daily Flow</h2>
+        <p>Use this order every day to keep the office and field team aligned.</p>
+        <ol class="steps">
+          <li><strong>Start with the overview.</strong> Review who is active, who is late, and which visits are still pending.</li>
+          <li><strong>Create or update project targets.</strong> Add new work, change visit details, or remove a project when it is no longer needed.</li>
+          <li><strong>Assign jobs to employees.</strong> Send project visits to the correct staff so they can see the route and destination.</li>
+          <li><strong>Check the employee side.</strong> Confirm the worker receives the assignment and can open the route from their app.</li>
+          <li><strong>Follow progress.</strong> Watch arrival status and visit completion through the manager view and GPS page.</li>
+        </ol>
+      </div>
+
+      <div class="card">
+        <h2>Helpful Tips</h2>
+        <p>These small habits make the workflow easier and more accurate.</p>
+        <ul class="preview-list">
+          <li><strong>Keep the morning overview fresh.</strong> It helps you spot delays early.</li>
+          <li><strong>Use clear project names.</strong> This makes assignment and tracking much easier.</li>
+          <li><strong>Check the employee app after saving.</strong> Make sure the visit appears on the field side.</li>
+          <li><strong>Review arrival status before closing the day.</strong> This helps prevent missed visits.</li>
+        </ul>
+      </div>
+    </section>
+  </div>
+</body>
+</html>

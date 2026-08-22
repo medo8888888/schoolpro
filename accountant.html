@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accountant Dashboard</title>
+  <style>
+    :root {
+      --bg: #f6efe5;
+      --panel: rgba(255, 255, 255, 0.9);
+      --panel-strong: #ffffff;
+      --text: #16202a;
+      --muted: #667085;
+      --line: #d8d1c5;
+      --accent: #0f766e;
+      --accent-2: #c2410c;
+      --good: #166534;
+      --warn: #9a3412;
+      --shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(15,118,110,0.16), transparent 24%),
+        radial-gradient(circle at top right, rgba(194,65,12,0.14), transparent 26%),
+        linear-gradient(180deg, #fffaf3 0%, #f6efe5 100%);
+      min-height: 100vh;
+    }
+    .wrap {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 40px;
+    }
+    .hero {
+      background: linear-gradient(135deg, #132238 0%, #1f3b4d 45%, #0f766e 100%);
+      color: #f8fafc;
+      border-radius: 24px;
+      padding: 26px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -40px -40px auto;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      filter: blur(0);
+    }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(30px, 4vw, 50px);
+      letter-spacing: -0.03em;
+    }
+    .sub {
+      margin: 0;
+      max-width: 760px;
+      color: rgba(248, 250, 252, 0.84);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+    .link {
+      text-decoration: none;
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(255,255,255,0.08);
+      padding: 10px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+    }
+    .demo-pill {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(134, 239, 172, 0.45);
+      background: rgba(22, 163, 74, 0.16);
+      color: #dcfce7;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 18px 0;
+    }
+    .demo-notes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .demo-note {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+    }
+    .demo-note strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+    .demo-note .meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+    .stat {
+      padding: 18px;
+      min-height: 118px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+    }
+    .value {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: clamp(26px, 3vw, 40px);
+      font-weight: 700;
+      color: var(--text);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.6fr 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin: 6px 0 14px;
+    }
+    .project-card {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .project-card:hover { transform: translateY(-2px); border-color: rgba(15,118,110,0.4); }
+    .project-card.active { border-color: rgba(15,118,110,0.65); box-shadow: 0 12px 22px rgba(15,118,110,0.2); }
+    .project-card h3 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18px;
+    }
+    .chart-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .pie {
+      width: 92px;
+      height: 92px;
+      flex: 0 0 auto;
+    }
+    .pie-bg { stroke: #ede4d7; }
+    .pie-done { stroke: var(--accent); }
+    .chart-text {
+      display: grid;
+      gap: 2px;
+    }
+    .chart-text strong {
+      font-size: 18px;
+    }
+    .chart-text span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .panel {
+      padding: 18px;
+    }
+    .panel h2 {
+      margin: 0 0 6px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 24px;
+    }
+    .panel p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .btn {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      cursor: pointer;
+      background: var(--accent);
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+    }
+    .btn.secondary {
+      background: #ffffff;
+      color: var(--accent);
+      border: 1px solid rgba(15,118,110,0.25);
+    }
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .search-input {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-width: 240px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+    .search-select {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 12px;
+      min-width: 170px;
+      font-size: 14px;
+      background: #fff;
+      color: var(--text);
+    }
+    .table-wrap {
+      overflow: auto;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+    }
+    th, td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #ece7dd;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    th {
+      background: #f7f2ea;
+      color: #5f6470;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 11px;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .amount {
+      font-weight: 700;
+      color: var(--good);
+      white-space: nowrap;
+    }
+    .amount.left {
+      color: var(--warn);
+    }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .status.done { background: rgba(22, 101, 52, 0.12); color: var(--good); }
+    .status.progress { background: rgba(154, 52, 18, 0.12); color: var(--warn); }
+    .status.pending { background: rgba(15, 118, 110, 0.12); color: var(--accent); }
+    .side-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .notification-list {
+      display: grid;
+      gap: 10px;
+    }
+    .notification-item {
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+      padding: 12px;
+    }
+    .notification-item strong { display: block; font-size: 15px; margin-bottom: 4px; }
+    .notification-item.good { border-color: rgba(22,101,52,0.3); background: rgba(22,101,52,0.08); }
+    .notification-item.warn { border-color: rgba(154,52,18,0.3); background: rgba(154,52,18,0.08); }
+    .notification-item.danger { border-color: rgba(190,24,93,0.3); background: rgba(190,24,93,0.08); }
+    .insight-meta { color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .project-detail {
+      margin-top: 12px;
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid #d7ccbc;
+      background: linear-gradient(180deg, #fffdfa 0%, #f8f1e6 100%);
+      min-height: 235px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.7);
+    }
+    .project-detail.centered {
+      max-width: 880px;
+      margin: 14px auto 0;
+    }
+    .detail-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .detail-badges {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .detail-badge {
+      border-radius: 999px;
+      padding: 5px 10px;
+      border: 1px solid #d6c9b2;
+      background: #fff6e8;
+      color: #614d2c;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .project-detail h3 {
+      margin: 0 0 8px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 21px;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .detail-item {
+      background: #fff9ef;
+      border: 1px solid #e7dcc8;
+      border-radius: 10px;
+      padding: 10px;
+    }
+    .detail-item .k { color: var(--muted); font-size: 12px; }
+    .detail-item .v { font-weight: 700; font-size: 14px; color: var(--text); }
+    .ledger-item {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: var(--panel-strong);
+    }
+    .ledger-item strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+    .ledger-meta {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .empty {
+      color: var(--muted);
+      padding: 14px;
+    }
+    @media (max-width: 900px) {
+      .stats, .grid { grid-template-columns: 1fr; }
+      .notification-list { grid-template-columns: 1fr; }
+      .detail-grid { grid-template-columns: 1fr; }
+      .wrap { width: min(100% - 20px, 1200px); padding-top: 16px; }
+      .compliance-panel { margin:16px 0; padding:16px; border:1px solid rgba(251,191,36,.35); border-radius:14px; background:rgba(251,191,36,.08); }
+      .compliance-panel-head { display:flex; justify-content:space-between; gap:12px; color:var(--text); }
+      .compliance-panel-head span, .compliance-panel-help, .compliance-panel-item span { color:var(--muted); font-size:12px; }
+      .compliance-panel-help { margin:7px 0 0; }
+      .compliance-panel-list { display:grid; gap:8px; margin-top:10px; }
+      .compliance-panel-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px; border:1px solid rgba(255,255,255,.1); border-radius:10px; background:rgba(255,255,255,.03); }
+      .compliance-panel-item strong { display:block; margin-bottom:3px; }
+      .compliance-panel-item button { border:1px solid rgba(45,212,191,.4); border-radius:999px; padding:7px 10px; background:rgba(45,212,191,.14); color:var(--text); cursor:pointer; font-weight:700; }
+      .compliance-panel-item.resolved { border-color:rgba(45,212,191,.35); }
+      .compliance-panel-empty { color:var(--muted); font-size:12px; }
+    }
+  </style>
+
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src='auth.js'></script>
+  <link rel="stylesheet" href="complaint.css" />
+  <script>if (window.__FIELDTRACK_AUTH) { window.__FIELDTRACK_AUTH.guardPage(); }</script>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="topline">
+        <div>
+          <h1>Accountant Dashboard</h1>
+          <p class="sub">Track every project visitation as money earned and money left. Each visit is priced per project, so completed revenue and remaining revenue stay visible alongside the visit count.</p>
+          <div class="demo-pill">Live Mode</div>
+          <div class="links">
+            <a class="link" href="manger.html">Manager</a>
+            <a class="link" href="employee-app.html">Employee App</a>
+            <a class="link" href="gps.html">GPS</a>
+            <a class="link" href="employees.html">Employees</a>
+            <a class="link" href="index.html">Operations</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="card stat"><div class="label">Projects</div><div class="value" id="projectCount">0</div></div>
+      <div class="card stat"><div class="label">Collected</div><div class="value" id="doneTotal">QAR 0</div></div>
+      <div class="card stat"><div class="label">Left to Collect (Client Didnt Pay)</div><div class="value" id="leftTotal">QAR 0</div></div>
+      <div class="card stat"><div class="label">Contract Value</div><div class="value" id="contractTotal">QAR 0</div></div>
+    </section>
+
+    <section class="compliance-panel" data-compliance-panel></section>
+
+    <section class="card panel complaint-card">
+      <h2>Report a complaint or issue</h2>
+      <p>Describe the problem and send it directly to the support contact.</p>
+      <div class="complaint-contact">
+        <a id="complaintEmailLink" href="mailto:abassmahmoud@gmail.com">Email abassmahmoud@gmail.com</a>
+        <a id="complaintPhoneLink" href="tel:+97433775363">Call +974 33775363</a>
+        <a id="complaintWhatsappLink" href="https://wa.me/97433775363?text=Hello%2C%20I%20want%20to%20report%20a%20complaint.">WhatsApp +974 33775363</a>
+      </div>
+      <form class="complaint-form" id="complaintForm">
+        <select id="complaintCategory" aria-label="Complaint category">
+          <option value="Attendance">Attendance problem</option>
+          <option value="GPS">GPS or location problem</option>
+          <option value="Payroll">Payroll or payment problem</option>
+          <option value="Account">Account or login problem</option>
+          <option value="Other">Other complaint</option>
+        </select>
+        <textarea id="complaintDescription" placeholder="Describe what went wrong and include the date or employee name if relevant." required></textarea>
+        <div class="complaint-actions"><button type="submit" data-channel="email">Send by Email</button><button type="submit" data-channel="whatsapp">Send by WhatsApp</button></div>
+        <div class="complaint-status" id="complaintStatus">Your complaint will open in your email app.</div>
+      </form>
+    </section>
+
+    <section class="card panel suggestion-card">
+      <h2>Send a suggestion</h2>
+      <p>Share an idea or improvement. It goes to the same support contact.</p>
+      <div class="complaint-contact">
+        <a id="suggestionEmailLink" href="mailto:abassmahmoud@gmail.com">Email abassmahmoud@gmail.com</a>
+        <a id="suggestionPhoneLink" href="tel:+97433775363">Call +974 33775363</a>
+        <a id="suggestionWhatsappLink" href="https://wa.me/97433775363?text=Hello%2C%20I%20have%20a%20suggestion.">WhatsApp +974 33775363</a>
+      </div>
+      <form class="complaint-form" id="suggestionForm">
+        <select id="suggestionCategory" aria-label="Suggestion category">
+          <option value="Process">Process improvement</option>
+          <option value="App">App or feature idea</option>
+          <option value="Schedule">Schedule or workload</option>
+          <option value="Other">Other suggestion</option>
+        </select>
+        <textarea id="suggestionDescription" placeholder="Describe your suggestion or idea." required></textarea>
+        <div class="complaint-actions"><button type="submit" data-channel="email">Send by Email</button><button type="submit" data-channel="whatsapp">Send by WhatsApp</button></div>
+        <div class="complaint-status" id="suggestionStatus">Your suggestion will open in your email app.</div>
+      </form>
+    </section>
+
+    <section class="demo-notes" id="demoNotes"></section>
+
+    <section class="card panel" id="excel-export" style="margin-bottom:16px;">
+      <div class="toolbar">
+        <div>
+          <h2>Export Excel</h2>
+          <p>Accountant export: one row per project, then one TOTAL row at the end.</p>
+        </div>
+        <div class="filters">
+          <select id="exportWeek" class="search-select" onchange="updateExportWeekStatus()"></select>
+          <button class="btn" onclick="exportAllExcel()">Export Excel</button>
+        </div>
+      </div>
+      <div class="empty" id="exportStatus">Select a week then export.</div>
+    </section>
+
+    <section class="grid">
+      <div class="card panel">
+        <div class="toolbar">
+          <div>
+            <h2>Project Revenue</h2>
+            <p>Completed revenue = completed visits × per-visit price. Remaining revenue = pending visits × per-visit price.</p>
+          </div>
+          <div class="filters">
+            <input id="projectSearch" class="search-input" type="text" placeholder="Search by client, project, engineer, type" oninput="render()" />
+            <select id="typeFilter" class="search-select" onchange="render()">
+              <option value="all">All Types</option>
+            </select>
+            <select id="collectionFilter" class="search-select" onchange="render()">
+              <option value="all">All Collection</option>
+              <option value="paid_full">Paid Full</option>
+              <option value="paid_half">Paid Half</option>
+              <option value="unpaid">Client Didnt Pay</option>
+              <option value="attention">Needs Attention</option>
+            </select>
+            <button class="btn secondary" onclick="clearProjectFilters()">Clear</button>
+            <button class="btn" onclick="resetProjectRevenueData()">Clear Stored Revenue</button>
+            <button class="btn secondary" onclick="refreshView()">Refresh</button>
+          </div>
+        </div>
+        <div class="project-grid" id="projectCards"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Client</th>
+                <th>Project</th>
+                <th>Type</th>
+                <th>Visits</th>
+                <th>Price</th>
+                <th>Expected</th>
+                <th>Collected</th>
+                <th>Left to Collect</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="projectTable"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <div class="toolbar">
+          <div>
+            <h2>Notifications</h2>
+            <p>Revenue and collection alerts from project activity.</p>
+          </div>
+        </div>
+        <div class="notification-list" id="insightCards"></div>
+        <div class="toolbar" style="margin-top:14px;">
+          <div>
+            <h2>Recent Ledger</h2>
+            <p>Latest visitation entries pulled from localStorage.</p>
+          </div>
+        </div>
+        <div class="side-list" id="ledgerList"></div>
+      </div>
+    </section>
+  </div>
+
+  <script src="compliance.js"></script>
+  <script src="complaint.js"></script>
+  <script src="suggestion.js"></script>
+  <script>
+    const PROJECT_TARGET_KEY = 'FIELDTRACK_PROJECT_VISIT_TARGETS';
+    const VISIT_KEY = 'EMPLOYEE_APP_VISITATIONS';
+    const APPOINTMENT_KEY = 'FIELDTRACK_VISIT_APPOINTMENTS';
+    const ASSIGN_KEY = 'FIELDTRACK_ASSIGNMENTS';
+    const MARKETING_VISIT_KEY = 'EMPLOYEE_APP_MARKETING_VISITATIONS';
+    const CLOCK_KEY = 'EMPLOYEE_APP_CLOCK';
+    const uiState = { selectedProjectId: '' };
+
+    function readJson(key, fallback) {
+      try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+      } catch (err) {
+        return fallback;
+      }
+    }
+
+    function money(value) {
+      const amount = Number(value || 0);
+      const fixed = Number.isFinite(amount) ? amount.toFixed(amount % 1 === 0 ? 0 : 2) : '0';
+      return 'QAR ' + fixed;
+    }
+
+    function percent(value) {
+      const amount = Math.max(0, Math.min(100, Number(value || 0)));
+      return Math.round(amount);
+    }
+
+    function formatDateTime(value) {
+      if (!value) return 'Not recorded';
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+    }
+
+    function paymentStatusLabel(item, contractAmount) {
+      const status = String(item && item.paymentStatus ? item.paymentStatus : '').toLowerCase();
+      const collected = Number(item && item.paymentCollected != null ? item.paymentCollected : NaN);
+      if (status === 'paid_full' || collected >= contractAmount) {
+        return { text: 'Paid Full', cls: 'done' };
+      }
+      if (status === 'paid_half' || collected > 0) {
+        return { text: 'Paid Half', cls: 'progress' };
+      }
+      if (status === 'unpaid') {
+        return { text: 'Client Didnt Pay', cls: 'pending' };
+      }
+      return { text: 'Not Recorded', cls: 'pending' };
+    }
+
+    function inferCollected(item, contractAmount) {
+      const direct = Number(item && item.paymentCollected != null ? item.paymentCollected : NaN);
+      if (Number.isFinite(direct)) {
+        return Math.max(0, direct);
+      }
+      const status = String(item && item.paymentStatus ? item.paymentStatus : '').toLowerCase();
+      if (status === 'paid_full') return contractAmount;
+      if (status === 'paid_half') return contractAmount / 2;
+      return 0;
+    }
+
+    function normalizeEngineers(item) {
+      const raw = item && (item.engineers || item.engineerNames || item.engineer);
+      if (Array.isArray(raw)) {
+        return raw.filter(Boolean).join(', ') || 'Not assigned';
+      }
+      if (typeof raw === 'string' && raw.trim()) {
+        return raw.trim();
+      }
+      return 'Not assigned';
+    }
+
+    function normalizeProject(target, index) {
+      const required = Number(target.requiredVisits || 0);
+      const completed = Number(target.completedVisits || 0);
+      const remaining = Math.max(0, required - completed);
+      const visitPrice = Number(target.visitPrice || 0);
+      const expectedFromVisits = required * visitPrice;
+      const contractCandidate = Number(target.contractValue || 0);
+      const contractAmount = contractCandidate > 0 ? contractCandidate : expectedFromVisits;
+      const earnedFromVisits = completed * visitPrice;
+      const leftFromVisits = remaining * visitPrice;
+      const collected = Math.min(contractAmount, inferCollected(target, contractAmount));
+      const leftToCollect = Math.max(0, contractAmount - collected);
+      const id = String(target.id || (target.projectName || 'project') + '-' + index);
+      const completionPct = percent(required > 0 ? (completed / required) * 100 : 0);
+      const collectionPct = percent(contractAmount > 0 ? (collected / contractAmount) * 100 : 0);
+      const payment = paymentStatusLabel({ paymentStatus: target.paymentStatus, paymentCollected: collected }, contractAmount);
+      return {
+        id,
+        clientName: target.clientName || 'Client',
+        projectName: target.projectName || 'Project',
+        discipline: target.discipline || target.systemType || target.category || 'General',
+        engineers: normalizeEngineers(target),
+        visitationEngineer: target.visitationEngineer || target.assignedEngineer || target.engineer || normalizeEngineers(target),
+        admittedAt: target.admittedAt || target.createdAt || target.updatedAt || '',
+        admittedBy: target.admittedBy || target.createdBy || target.managerName || 'Not recorded',
+        required,
+        completed,
+        remaining,
+        visitPrice,
+        expectedFromVisits,
+        earnedFromVisits,
+        leftFromVisits,
+        contractAmount,
+        collected,
+        leftToCollect,
+        completionPct,
+        collectionPct,
+        payment
+      };
+    }
+
+    function pieMarkup(doneAmount, leftAmount) {
+      const done = Math.max(0, Number(doneAmount || 0));
+      const left = Math.max(0, Number(leftAmount || 0));
+      const total = done + left;
+      const ratio = total > 0 ? done / total : 0;
+      const circumference = 2 * Math.PI * 40;
+      const dash = ratio * circumference;
+      const gap = circumference - dash;
+      const pct = percent(ratio * 100);
+      return '<svg class="pie" viewBox="0 0 100 100" aria-label="' + pct + ' percent completed">' +
+        '<circle class="pie-bg" cx="50" cy="50" r="40" fill="none" stroke-width="12" />' +
+        '<circle class="pie-done" cx="50" cy="50" r="40" fill="none" stroke-width="12" stroke-linecap="round" transform="rotate(-90 50 50)" stroke-dasharray="' + dash + ' ' + gap + '" />' +
+        '<circle cx="50" cy="50" r="29" fill="#fffaf3" />' +
+        '<text x="50" y="54" text-anchor="middle" font-size="16" font-weight="700" fill="#16202a">' + pct + '%</text>' +
+      '</svg>';
+    }
+
+    function getTargets() {
+      const raw = readJson(PROJECT_TARGET_KEY, {});
+      return raw && typeof raw === 'object' ? raw : {};
+    }
+
+    function getVisitMap() {
+      const raw = readJson(VISIT_KEY, {});
+      return raw && typeof raw === 'object' ? raw : {};
+    }
+
+    function getRows() {
+      const rows = Object.values(getTargets())
+        .sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+      return rows;
+    }
+
+    function resetProjectRevenueData() {
+      localStorage.removeItem(PROJECT_TARGET_KEY);
+      localStorage.removeItem(VISIT_KEY);
+      render();
+    }
+
+    function selectProject(projectId) {
+      uiState.selectedProjectId = String(projectId || '');
+      render();
+    }
+
+    function clearProjectFilters() {
+      const searchEl = document.getElementById('projectSearch');
+      const typeEl = document.getElementById('typeFilter');
+      const collectionEl = document.getElementById('collectionFilter');
+      if (searchEl) searchEl.value = '';
+      if (typeEl) typeEl.value = 'all';
+      if (collectionEl) collectionEl.value = 'all';
+      render();
+    }
+
+    function getCollectionKey(project) {
+      if (project.collected >= project.contractAmount && project.contractAmount > 0) return 'paid_full';
+      if (project.collected > 0) return 'paid_half';
+      return 'unpaid';
+    }
+
+    function setupTypeFilter(projects) {
+      const typeEl = document.getElementById('typeFilter');
+      if (!typeEl) return;
+      const current = typeEl.value || 'all';
+      const types = Array.from(new Set(projects.map((project) => String(project.discipline || 'General')))).sort();
+      typeEl.innerHTML = '<option value="all">All Types</option>' + types.map((type) => '<option value="' + type + '">' + type + '</option>').join('');
+      typeEl.value = types.includes(current) || current === 'all' ? current : 'all';
+    }
+
+    function render() {
+      const rows = getRows();
+      const visitsByUser = getVisitMap();
+      const visits = Object.values(visitsByUser).flatMap((entries) => Array.isArray(entries) ? entries : []);
+      const table = document.getElementById('projectTable');
+      const ledger = document.getElementById('ledgerList');
+      const cards = document.getElementById('projectCards');
+      const notes = document.getElementById('demoNotes');
+      const insights = document.getElementById('insightCards');
+      const projectDetail = document.getElementById('projectDetail');
+      const projects = rows.map((target, index) => normalizeProject(target, index));
+      setupTypeFilter(projects);
+      const search = String((document.getElementById('projectSearch') || {}).value || '').trim().toLowerCase();
+      const typeValue = String((document.getElementById('typeFilter') || {}).value || 'all');
+      const collectionValue = String((document.getElementById('collectionFilter') || {}).value || 'all');
+      const filteredProjects = projects.filter((project) => {
+        const haystack = [project.clientName, project.projectName, project.discipline, project.engineers].join(' ').toLowerCase();
+        const textOk = !search || haystack.includes(search);
+        const typeOk = typeValue === 'all' || project.discipline === typeValue;
+        const collectionKey = getCollectionKey(project);
+        const collectionOk = collectionValue === 'all'
+          || (collectionValue === 'attention' ? project.collected < project.contractAmount : collectionKey === collectionValue);
+        return textOk && typeOk && collectionOk;
+      });
+
+      if (filteredProjects.length && !filteredProjects.some((project) => project.id === uiState.selectedProjectId)) {
+        uiState.selectedProjectId = filteredProjects[0].id;
+      }
+      if (!filteredProjects.length) {
+        uiState.selectedProjectId = '';
+      }
+
+      const selected = filteredProjects.find((project) => project.id === uiState.selectedProjectId) || filteredProjects[0] || null;
+
+      const totals = filteredProjects.reduce((acc, project) => {
+        acc.contract += project.contractAmount;
+        acc.done += project.collected;
+        acc.left += project.leftToCollect;
+        acc.collected += project.collected;
+        return acc;
+      }, { contract: 0, done: 0, left: 0, collected: 0 });
+
+      document.getElementById('projectCount').textContent = String(filteredProjects.length);
+      document.getElementById('doneTotal').textContent = money(totals.done);
+      document.getElementById('leftTotal').textContent = money(totals.left);
+      document.getElementById('contractTotal').textContent = money(totals.contract);
+
+      if (notes) {
+        notes.innerHTML = '<div class="demo-note"><strong>No notes available</strong><div class="meta">No stored notes found.</div></div>';
+      }
+
+      if (cards) {
+        cards.innerHTML = filteredProjects.map((project) => {
+          const activeClass = project.id === uiState.selectedProjectId ? ' active' : '';
+          const safeId = project.id.replace(/'/g, "\\'");
+          return '<button type="button" class="card project-card' + activeClass + '" onclick="selectProject(\'' + safeId + '\')"><h3>' + project.projectName + '</h3>' +
+            '<div class="chart-row">' +
+              pieMarkup(project.earnedFromVisits, project.leftFromVisits) +
+              '<div class="chart-text">' +
+                '<strong>' + money(project.earnedFromVisits) + '</strong>' +
+                '<span>done</span>' +
+                '<strong>' + money(project.leftFromVisits) + '</strong>' +
+                '<span>left</span>' +
+              '</div>' +
+            '</div>' +
+            '<div class="ledger-meta">' + project.clientName + ' • ' + project.completed + '/' + project.required + ' visits • ' + money(project.visitPrice) + ' per visit</div>' +
+            '<div class="ledger-meta">Type: ' + project.discipline + ' • Engineers: ' + project.engineers + '</div>' +
+            '<div class="ledger-meta">Collected ' + money(project.collected) + ' of ' + money(project.contractAmount) + ' contract (' + project.collectionPct + '%)</div>' +
+          '</button>';
+        }).join('');
+      }
+
+      if (!filteredProjects.length) {
+        table.innerHTML = '<tr><td colspan="9"><div class="empty">No projects match this search.</div></td></tr>';
+      } else {
+        table.innerHTML = filteredProjects.map((project) => {
+          const statusClass = project.remaining === 0 ? 'done' : project.completed === 0 ? 'pending' : 'progress';
+          const statusText = project.remaining === 0 ? 'Completed' : project.completed === 0 ? 'Pending' : 'In Progress';
+          return '<tr>' +
+            '<td>' + project.clientName + '</td>' +
+            '<td><button type="button" class="btn secondary" style="padding:6px 10px; font-size:12px;" onclick="selectProject(\'' + project.id.replace(/'/g, "\\'") + '\')">' + project.projectName + '</button></td>' +
+            '<td>' + project.discipline + '</td>' +
+            '<td>' + project.completed + '/' + project.required + '</td>' +
+            '<td>' + money(project.visitPrice) + '</td>' +
+            '<td class="amount">' + money(project.expectedFromVisits) + '</td>' +
+            '<td class="amount">' + money(project.collected) + '</td>' +
+            '<td class="amount left">' + money(project.leftToCollect) + '</td>' +
+            '<td><span class="status ' + statusClass + '">' + statusText + '</span></td>' +
+          '</tr>';
+        }).join('');
+      }
+
+      if (insights) {
+        const topProject = filteredProjects.slice().sort((a, b) => b.completionPct - a.completionPct || b.earnedFromVisits - a.earnedFromVisits)[0] || null;
+        const urgentProject = filteredProjects
+          .filter((project) => project.completed > 0 && project.collected === 0)
+          .sort((a, b) => b.earnedFromVisits - a.earnedFromVisits || b.leftToCollect - a.leftToCollect)[0] || null;
+        const partialProject = filteredProjects
+          .filter((project) => project.collected > 0 && project.collected < project.contractAmount)
+          .sort((a, b) => a.collectionPct - b.collectionPct || b.leftToCollect - a.leftToCollect)[0] || null;
+        const onTrackProject = filteredProjects
+          .filter((project) => project.collected >= project.contractAmount && project.contractAmount > 0)
+          .sort((a, b) => b.collected - a.collected || b.completionPct - a.completionPct)[0] || topProject;
+
+        const topMarkup = onTrackProject
+          ? '<div class="notification-item good"><strong>On Track</strong><div class="insight-meta">' + onTrackProject.projectName + ' • Visitation complete: ' + (onTrackProject.remaining === 0 ? 'Yes' : 'No') + ' • Collected: ' + money(onTrackProject.collected) + ' / ' + money(onTrackProject.contractAmount) + '.</div></div>'
+          : '<div class="notification-item good"><strong>On Track</strong><div class="insight-meta">No project data yet.</div></div>';
+
+        const statusMarkup = partialProject
+          ? '<div class="notification-item warn"><strong>Work Harder</strong><div class="insight-meta">' + partialProject.projectName + ' • Visitation complete: ' + (partialProject.remaining === 0 ? 'Yes' : 'No') + ' • Collected: ' + money(partialProject.collected) + ' / ' + money(partialProject.contractAmount) + ' • Left: ' + money(partialProject.leftToCollect) + '.</div></div>'
+          : '<div class="notification-item warn"><strong>Work Harder</strong><div class="insight-meta">No partial-collection project right now.</div></div>';
+
+        const attentionMarkup = urgentProject
+          ? '<div class="notification-item danger"><strong>Need Attention</strong><div class="insight-meta">' + urgentProject.projectName + ' • Visitation complete: ' + (urgentProject.remaining === 0 ? 'Yes' : 'No') + ' • Collected: ' + money(urgentProject.collected) + ' / ' + money(urgentProject.contractAmount) + '. Immediate follow-up required.</div></div>'
+          : '<div class="notification-item danger"><strong>Need Attention</strong><div class="insight-meta">No zero-collection alert right now.</div></div>';
+
+        insights.innerHTML = topMarkup + statusMarkup + attentionMarkup;
+      }
+
+      if (projectDetail) {
+        if (!selected) {
+          projectDetail.innerHTML = '<h3>Project Details</h3><div class="insight-meta">No project selected. Use search or click a project from the table/cards.</div>';
+        } else {
+          projectDetail.innerHTML = '<h3>' + selected.projectName + '</h3>' +
+            '<div class="detail-top">' +
+              '<div class="insight-meta">' + selected.clientName + ' • ' + selected.discipline + '</div>' +
+              '<div class="detail-badges"><span class="detail-badge">Engineer: ' + selected.visitationEngineer + '</span><span class="detail-badge">Admitted by: ' + selected.admittedBy + '</span></div>' +
+            '</div>' +
+            '<div class="insight-meta">Admitted on: ' + formatDateTime(selected.admittedAt) + '</div>' +
+            '<div class="insight-meta">Engineers team: ' + selected.engineers + '</div>' +
+            '<div class="detail-grid">' +
+              '<div class="detail-item"><div class="k">Visits Done</div><div class="v">' + selected.completed + '</div></div>' +
+              '<div class="detail-item"><div class="k">Visits Left</div><div class="v">' + selected.remaining + '</div></div>' +
+              '<div class="detail-item"><div class="k">Visitation Done Value</div><div class="v">' + money(selected.earnedFromVisits) + '</div></div>' +
+              '<div class="detail-item"><div class="k">Visitation Left Value</div><div class="v">' + money(selected.leftFromVisits) + '</div></div>' +
+              '<div class="detail-item"><div class="k">Expected From Visits</div><div class="v">' + money(selected.expectedFromVisits) + '</div></div>' +
+              '<div class="detail-item"><div class="k">Left To Collect</div><div class="v">' + money(selected.leftToCollect) + '</div></div>' +
+              '<div class="detail-item"><div class="k">Contract</div><div class="v">' + money(selected.contractAmount) + '</div></div>' +
+              '<div class="detail-item"><div class="k">Actually Got</div><div class="v">' + money(selected.collected) + ' (' + selected.collectionPct + '%)</div></div>' +
+              '<div class="detail-item"><div class="k">Progress</div><div class="v">' + selected.completionPct + '% done</div></div>' +
+              '<div class="detail-item"><div class="k">Payment State</div><div class="v">' + selected.payment.text + '</div></div>' +
+            '</div>';
+        }
+      }
+
+      const recent = visits
+        .slice()
+        .sort((a, b) => new Date(b.time || 0) - new Date(a.time || 0))
+        .slice(0, 8);
+
+      if (!recent.length) {
+        ledger.innerHTML = '<div class="ledger-item"><strong>No visitation records</strong><div class="ledger-meta">Employee submissions will appear here.</div></div>';
+      } else {
+        ledger.innerHTML = recent.map((item) => {
+          const required = Number(item.requiredVisits || 0);
+          const remaining = Number(item.remainingVisits || 0);
+          const completed = Math.max(0, required - remaining);
+          const price = Number(item.visitPrice || 0);
+          const expected = required * price;
+          const contractAmount = Number(item.contractValue || expected) || expected;
+          const collected = inferCollected(item, contractAmount);
+          const payment = paymentStatusLabel({ paymentStatus: item.paymentStatus, paymentCollected: collected }, contractAmount);
+          return '<div class="ledger-item"><strong>' + (item.clientName || 'Client') + ' • ' + (item.projectName || 'Project') + '</strong>' +
+            '<div class="ledger-meta">Type: ' + (item.discipline || 'General') + ' • Engineers: ' + normalizeEngineers(item) + '</div>' +
+            '<div class="ledger-meta">' + money(completed * price) + ' done • ' + money(remaining * price) + ' left • ' + money(price) + ' per visit</div>' +
+            '<div class="ledger-meta">Expected ' + money(expected) + ' • Contract ' + money(contractAmount) + ' • Got ' + money(collected) + ' (' + payment.text + ')</div>' +
+            '<div class="ledger-meta">' + (item.type || 'Visit') + ' • ' + new Date(item.time || Date.now()).toLocaleString() + '</div></div>';
+        }).join('');
+      }
+    }
+
+    function refreshView() {
+      render();
+    }
+
+    let exportWeekRanges = [];
+
+    function setExportStatus(message) {
+      const node = document.getElementById('exportStatus');
+      if (node) node.textContent = message;
+    }
+
+    function pushValidTimestamp(bucket, value) {
+      const ts = new Date(value || 0).getTime();
+      if (Number.isFinite(ts)) bucket.push(ts);
+    }
+
+    function startOfWeek(dateValue) {
+      const date = new Date(dateValue || Date.now());
+      date.setHours(0, 0, 0, 0);
+      const day = date.getDay();
+      const diffToMonday = (day + 6) % 7;
+      date.setDate(date.getDate() - diffToMonday);
+      return date;
+    }
+
+    function endOfWeek(startDate) {
+      const end = new Date(startDate.getTime());
+      end.setDate(end.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+      return end;
+    }
+
+    function getAppointments() {
+      const value = readJson(APPOINTMENT_KEY, {});
+      return Array.isArray(value.items) ? value.items : [];
+    }
+
+    function getAssignments() {
+      const value = readJson(ASSIGN_KEY, {});
+      return value && typeof value === 'object' ? value : {};
+    }
+
+    function getMarketingVisits() {
+      const value = readJson(MARKETING_VISIT_KEY, {});
+      return value && typeof value === 'object' ? value : {};
+    }
+
+    function getClockState() {
+      const value = readJson(CLOCK_KEY, {});
+      return value && typeof value === 'object' ? value : {};
+    }
+
+    function collectExportTimestamps() {
+      const times = [];
+
+      Object.values(getTargets()).forEach((item) => {
+        pushValidTimestamp(times, item && (item.updatedAt || item.nextVisitAt));
+      });
+
+      getAppointments().forEach((item) => {
+        pushValidTimestamp(times, item && (item.createdAt || item.scheduledAt || item.checkedInAt));
+      });
+
+      const visitStore = getVisitMap();
+      Object.values(visitStore || {}).forEach((entries) => {
+        (Array.isArray(entries) ? entries : []).forEach((item) => pushValidTimestamp(times, item && item.time));
+      });
+
+      const marketingStore = getMarketingVisits();
+      Object.values(marketingStore || {}).forEach((entries) => {
+        (Array.isArray(entries) ? entries : []).forEach((item) => pushValidTimestamp(times, item && item.time));
+      });
+
+      const clockState = getClockState();
+      (Array.isArray(clockState.locationHistory) ? clockState.locationHistory : []).forEach((item) => {
+        pushValidTimestamp(times, item && item.time);
+      });
+
+      const assignmentStore = getAssignments();
+      Object.values(assignmentStore || {}).forEach((entries) => {
+        (Array.isArray(entries) ? entries : []).forEach((item) => {
+          pushValidTimestamp(times, item && (item.updatedAt || item.assignedAt || item.arrivedAt));
+        });
+      });
+
+      return times;
+    }
+
+    function buildExportWeekRanges() {
+      const now = new Date();
+      const timestamps = collectExportTimestamps();
+      const earliest = timestamps.length ? new Date(Math.min.apply(null, timestamps)) : now;
+      const firstWeekStart = startOfWeek(earliest);
+      const ranges = [];
+
+      let cursor = new Date(firstWeekStart.getTime());
+      let weekIndex = 1;
+      while (cursor.getTime() <= now.getTime()) {
+        const weekStart = new Date(cursor.getTime());
+        const naturalEnd = endOfWeek(weekStart);
+        const weekEnd = naturalEnd.getTime() > now.getTime() ? new Date(now.getTime()) : naturalEnd;
+        ranges.push({
+          id: 'week-' + weekIndex,
+          label: 'Week ' + weekIndex + ' (' + weekStart.toLocaleDateString() + ' - ' + weekEnd.toLocaleDateString() + ')',
+          start: weekStart,
+          end: weekEnd
+        });
+        cursor.setDate(cursor.getDate() + 7);
+        weekIndex += 1;
+      }
+
+      return ranges.length ? ranges : [{
+        id: 'week-1',
+        label: 'Week 1 (' + now.toLocaleDateString() + ' - ' + now.toLocaleDateString() + ')',
+        start: startOfWeek(now),
+        end: now
+      }];
+    }
+
+    function populateExportWeekFilter() {
+      const select = document.getElementById('exportWeek');
+      if (!select) return;
+      const previousValue = select.value;
+      exportWeekRanges = buildExportWeekRanges();
+      select.innerHTML = exportWeekRanges.map((range) => '<option value="' + range.id + '">' + range.label + '</option>').join('');
+      const hasPrevious = exportWeekRanges.some((range) => range.id === previousValue);
+      if (hasPrevious) {
+        select.value = previousValue;
+      } else if (exportWeekRanges.length) {
+        select.value = exportWeekRanges[exportWeekRanges.length - 1].id;
+      }
+      updateExportWeekStatus();
+    }
+
+    function getSelectedExportWeekRange() {
+      const select = document.getElementById('exportWeek');
+      if (!select || !exportWeekRanges.length) return null;
+      return exportWeekRanges.find((range) => range.id === select.value) || exportWeekRanges[exportWeekRanges.length - 1] || null;
+    }
+
+    function updateExportWeekStatus() {
+      const selected = getSelectedExportWeekRange();
+      if (!selected) {
+        setExportStatus('No week range available.');
+        return;
+      }
+      setExportStatus('Selected ' + selected.label);
+    }
+
+    function inRange(value, range) {
+      if (!range || !range.start) return true;
+      const ts = new Date(value || 0).getTime();
+      if (!Number.isFinite(ts)) return false;
+      return ts >= range.start.getTime() && ts <= range.end.getTime();
+    }
+
+    function normalizeRows(rows, fallbackMessage) {
+      if (Array.isArray(rows) && rows.length) return rows;
+      return [{ info: fallbackMessage || 'No data in selected period' }];
+    }
+
+    function exportAllExcel() {
+      if (typeof XLSX === 'undefined' || !XLSX.utils) {
+        setExportStatus('Excel library not loaded. Refresh page and try again.');
+        return;
+      }
+
+      const range = getSelectedExportWeekRange();
+      if (!range) {
+        setExportStatus('No week selected.');
+        return;
+      }
+
+      const allProjects = getRows().map((target, index) => normalizeProject(target, index));
+
+      const visitStore = getVisitMap();
+      const weeklyVisits = Object.entries(visitStore)
+        .flatMap(([employee, entries]) => (Array.isArray(entries) ? entries.map((item) => ({ ...item, employee })) : []))
+        .filter((item) => inRange(item.time, range));
+
+      const projectVisitMap = {};
+      weeklyVisits.forEach((item) => {
+        const key = String(item.clientName || '').toLowerCase().trim() + '__' + String(item.projectName || '').toLowerCase().trim();
+        if (key === '__') return;
+        if (!projectVisitMap[key]) {
+          projectVisitMap[key] = { count: 0, value: 0 };
+        }
+        projectVisitMap[key].count += 1;
+        projectVisitMap[key].value += Number(item.visitPrice || 0);
+      });
+
+      const projects = allProjects.filter((project) => {
+        const key = String(project.clientName || '').toLowerCase().trim() + '__' + String(project.projectName || '').toLowerCase().trim();
+        return Boolean(projectVisitMap[key]) || inRange(project.admittedAt || project.updatedAt, range);
+      });
+
+      const weeklyDoneValue = weeklyVisits.reduce((sum, item) => sum + Number(item.visitPrice || 0), 0);
+      const totals = projects.reduce((acc, project) => {
+        acc.contract += Number(project.contractAmount || 0);
+        acc.left += Number(project.leftFromVisits || 0);
+        acc.collected += Number(project.collected || 0);
+        acc.leftToCollect += Number(project.leftToCollect || 0);
+        return acc;
+      }, { contract: 0, left: 0, collected: 0, leftToCollect: 0 });
+
+      const summaryRows = normalizeRows(projects.length ? [{
+        week: range.label,
+        projectCount: projects.length,
+        weeklyVisitsCount: weeklyVisits.length,
+        weeklyVisitValue: Number(weeklyDoneValue.toFixed(2)),
+        totalContractValue: Number(totals.contract.toFixed(2)),
+        totalCollected: Number(totals.collected.toFixed(2)),
+        totalLeftToCollect: Number(totals.leftToCollect.toFixed(2)),
+        balanceCheck: Number((totals.collected + totals.leftToCollect).toFixed(2))
+      }] : [], 'No finance summary in selected period');
+
+      const projectFinanceBaseRows = projects.map((project) => ({
+        projectKey: String(project.clientName || '').toLowerCase().trim() + '__' + String(project.projectName || '').toLowerCase().trim(),
+        clientName: project.clientName,
+        projectName: project.projectName,
+        discipline: project.discipline,
+        engineers: project.engineers,
+        weeklyVisitCount: Number((projectVisitMap[String(project.clientName || '').toLowerCase().trim() + '__' + String(project.projectName || '').toLowerCase().trim()] || {}).count || 0),
+        weeklyVisitValue: Number(((projectVisitMap[String(project.clientName || '').toLowerCase().trim() + '__' + String(project.projectName || '').toLowerCase().trim()] || {}).value || 0).toFixed(2)),
+        requiredVisits: Number(project.required || 0),
+        completedVisits: Number(project.completed || 0),
+        remainingVisits: Number(project.remaining || 0),
+        visitPrice: Number(project.visitPrice || 0),
+        expectedFromVisits: Number(project.expectedFromVisits || 0),
+        doneValue: Number(project.earnedFromVisits || 0),
+        leftValue: Number(project.leftFromVisits || 0),
+        contractValue: Number(project.contractAmount || 0),
+        collected: Number(project.collected || 0),
+        leftToCollect: Number(project.leftToCollect || 0),
+        completionPercent: Number(project.completionPct || 0),
+        collectionPercent: Number(project.collectionPct || 0),
+        paymentStatus: project.payment && project.payment.text ? project.payment.text : 'Not Recorded',
+        admittedAt: project.admittedAt || '',
+        admittedBy: project.admittedBy || ''
+      }));
+
+      const projectFinanceRows = projectFinanceBaseRows.length
+        ? projectFinanceBaseRows.concat([{
+            projectKey: 'TOTAL',
+            clientName: 'TOTAL',
+            projectName: 'All Projects',
+            discipline: '-',
+            engineers: '-',
+            weeklyVisitCount: Number(weeklyVisits.length || 0),
+            weeklyVisitValue: Number(weeklyDoneValue.toFixed(2)),
+            requiredVisits: Number(projects.reduce((sum, project) => sum + Number(project.required || 0), 0)),
+            completedVisits: Number(projects.reduce((sum, project) => sum + Number(project.completed || 0), 0)),
+            remainingVisits: Number(projects.reduce((sum, project) => sum + Number(project.remaining || 0), 0)),
+            visitPrice: 0,
+            expectedFromVisits: Number(projects.reduce((sum, project) => sum + Number(project.expectedFromVisits || 0), 0).toFixed(2)),
+            doneValue: Number(projects.reduce((sum, project) => sum + Number(project.earnedFromVisits || 0), 0).toFixed(2)),
+            leftValue: Number(projects.reduce((sum, project) => sum + Number(project.leftFromVisits || 0), 0).toFixed(2)),
+            contractValue: Number(totals.contract.toFixed(2)),
+            collected: Number(totals.collected.toFixed(2)),
+            leftToCollect: Number(totals.leftToCollect.toFixed(2)),
+            completionPercent: 0,
+            collectionPercent: Number(totals.contract > 0 ? ((totals.collected / totals.contract) * 100).toFixed(2) : 0),
+            paymentStatus: 'TOTAL',
+            admittedAt: '',
+            admittedBy: ''
+          }])
+        : normalizeRows([], 'No project finance rows in selected period');
+
+      const collectionsBaseRows = projects.map((project) => ({
+        projectKey: String(project.clientName || '').toLowerCase().trim() + '__' + String(project.projectName || '').toLowerCase().trim(),
+        clientName: project.clientName,
+        projectName: project.projectName,
+        paymentStatus: project.payment && project.payment.text ? project.payment.text : 'Not Recorded',
+        contractValue: Number(project.contractAmount || 0),
+        collectedAmount: Number(project.collected || 0),
+        leftToCollect: Number(project.leftToCollect || 0),
+        collectionPercent: Number(project.collectionPct || 0)
+      }));
+
+      const collectionsRows = collectionsBaseRows.length
+        ? collectionsBaseRows.concat([{
+            projectKey: 'TOTAL',
+            clientName: 'TOTAL',
+            projectName: 'All Projects',
+            paymentStatus: 'TOTAL',
+            contractValue: Number(totals.contract.toFixed(2)),
+            collectedAmount: Number(totals.collected.toFixed(2)),
+            leftToCollect: Number(totals.leftToCollect.toFixed(2)),
+            collectionPercent: Number(totals.contract > 0 ? ((totals.collected / totals.contract) * 100).toFixed(2) : 0)
+          }])
+        : normalizeRows([], 'No collections rows in selected period');
+
+      const simpleProjectRows = projects.length
+        ? projects.map((project) => ({
+            projectName: project.projectName,
+            collected: Number(project.collected || 0),
+            leftToCollect: Number(project.leftToCollect || 0)
+          })).concat([{
+            projectName: 'TOTAL',
+            collected: Number(totals.collected.toFixed(2)),
+            leftToCollect: Number(totals.leftToCollect.toFixed(2))
+          }])
+        : normalizeRows([], 'No project totals in selected period');
+
+      const projectLedgerBaseRows = projects.map((project) => {
+        const key = String(project.clientName || '').toLowerCase().trim() + '__' + String(project.projectName || '').toLowerCase().trim();
+        const weeklyAgg = projectVisitMap[key] || { count: 0, value: 0 };
+        return {
+          projectKey: key,
+          clientName: project.clientName,
+          projectName: project.projectName,
+          engineers: project.engineers,
+          weeklyVisitCount: Number(weeklyAgg.count || 0),
+          weeklyVisitValue: Number((weeklyAgg.value || 0).toFixed(2)),
+          requiredVisits: Number(project.required || 0),
+          completedVisits: Number(project.completed || 0),
+          remainingVisits: Number(project.remaining || 0),
+          visitPrice: Number(project.visitPrice || 0),
+          contractValue: Number(project.contractAmount || 0),
+          collected: Number(project.collected || 0),
+          leftToCollect: Number(project.leftToCollect || 0),
+          paymentStatus: project.payment && project.payment.text ? project.payment.text : 'Not Recorded'
+        };
+      });
+
+      const projectLedgerRows = projectLedgerBaseRows.length
+        ? projectLedgerBaseRows.concat([{
+            projectKey: 'TOTAL',
+            clientName: 'TOTAL',
+            projectName: 'All Projects',
+            engineers: '-',
+            weeklyVisitCount: Number(weeklyVisits.length || 0),
+            weeklyVisitValue: Number(weeklyDoneValue.toFixed(2)),
+            requiredVisits: Number(projects.reduce((sum, project) => sum + Number(project.required || 0), 0)),
+            completedVisits: Number(projects.reduce((sum, project) => sum + Number(project.completed || 0), 0)),
+            remainingVisits: Number(projects.reduce((sum, project) => sum + Number(project.remaining || 0), 0)),
+            visitPrice: 0,
+            contractValue: Number(totals.contract.toFixed(2)),
+            collected: Number(totals.collected.toFixed(2)),
+            leftToCollect: Number(totals.leftToCollect.toFixed(2)),
+            paymentStatus: 'TOTAL'
+          }])
+        : normalizeRows([], 'No project ledger rows in selected period');
+
+      const workbook = XLSX.utils.book_new();
+      const sheetDefs = [
+        { name: 'PerProjectTotals', rows: simpleProjectRows }
+      ];
+
+      sheetDefs.forEach((sheetDef) => {
+        const ws = XLSX.utils.json_to_sheet(sheetDef.rows);
+        XLSX.utils.book_append_sheet(workbook, ws, sheetDef.name);
+      });
+
+      const stamp = new Date().toISOString().replace(/[:]/g, '-').replace(/\..+/, '');
+      const fileName = 'accountant-finance-' + range.id + '-' + stamp + '.xlsx';
+      XLSX.writeFile(workbook, fileName);
+      setExportStatus('Exported ' + fileName + ' for ' + range.label + ' with per-project totals and final TOTAL row.');
+    }
+
+    window.addEventListener('storage', function () {
+      render();
+      populateExportWeekFilter();
+    });
+    window.addEventListener('load', function () {
+      render();
+      populateExportWeekFilter();
+    });
+    window.updateExportWeekStatus = updateExportWeekStatus;
+    window.exportAllExcel = exportAllExcel;
+  </script>
+</body>
+</html>

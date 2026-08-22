@@ -1,0 +1,94 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Workforce Management API",
+    "version": "1.0.0",
+    "description": "Backend API contract for workforce management, attendance, schedules, payroll, and reporting"
+  },
+  "servers": [
+    { "url": "https://api.example.com/v1" }
+  ],
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "summary": "Login user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Successful login" }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "summary": "Refresh access token",
+        "responses": { "200": { "description": "Token refreshed" } }
+      }
+    },
+    "/employees": {
+      "get": {
+        "summary": "List employees",
+        "responses": { "200": { "description": "Employees list" } }
+      },
+      "post": {
+        "summary": "Create employee",
+        "responses": { "201": { "description": "Employee created" } }
+      }
+    },
+    "/attendance/clock-in": {
+      "post": {
+        "summary": "Clock in employee",
+        "responses": { "200": { "description": "Clocked in" } }
+      }
+    },
+    "/attendance/clock-out": {
+      "post": {
+        "summary": "Clock out employee",
+        "responses": { "200": { "description": "Clocked out" } }
+      }
+    },
+    "/attendance": {
+      "get": {
+        "summary": "Get attendance records",
+        "responses": { "200": { "description": "Attendance records" } }
+      }
+    },
+    "/leave/requests": {
+      "post": {
+        "summary": "Create leave request",
+        "responses": { "201": { "description": "Leave request created" } }
+      }
+    },
+    "/schedules": {
+      "get": {
+        "summary": "List schedules",
+        "responses": { "200": { "description": "Schedules list" } }
+      }
+    },
+    "/payroll/run": {
+      "post": {
+        "summary": "Run payroll",
+        "responses": { "200": { "description": "Payroll generated" } }
+      }
+    },
+    "/reports/attendance": {
+      "get": {
+        "summary": "Get attendance report",
+        "responses": { "200": { "description": "Attendance report" } }
+      }
+    }
+  }
+}

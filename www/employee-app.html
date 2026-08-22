@@ -1,0 +1,1984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee App</title>
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #121b2d;
+      --panel-2: #1a2742;
+      --line: #2b3c60;
+      --text: #e8eefc;
+      --muted: #9fb0cf;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --accent: #3b82f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: radial-gradient(circle at top right, #1b2e53 0%, var(--bg) 55%);
+      color: var(--text);
+    }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 20px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .brand h1 { margin: 0; font-size: 24px; }
+    .brand p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+    .chip { padding: 7px 12px; border-radius: 999px; background: rgba(59,130,246,.16); border: 1px solid rgba(59,130,246,.4); color: #bfd7ff; font-size: 12px; }
+    .nav-links { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+    .nav-link { text-decoration:none; color:#bfd7ff; border:1px solid rgba(59,130,246,.4); background:rgba(59,130,246,.12); padding:6px 10px; border-radius:999px; font-size:12px; }
+    .grid { display: grid; gap: 12px; }
+    .stats { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+    .card { background: rgba(18,27,45,.9); border: 1px solid var(--line); border-radius: 14px; padding: 14px; }
+    .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+    .value { font-size: 26px; font-weight: 700; margin-top: 6px; }
+    .actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+    .btn { border: none; border-radius: 999px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+    .btn.in { background: var(--ok); color: #05210f; }
+    .btn.out { background: var(--warn); color: #2d1b00; }
+    .btn.map { background: var(--accent); color: #eaf2ff; }
+    .btn.break { background: #8b5cf6; color: #f4f0ff; }
+    .status { margin-top: 10px; font-size: 12px; color: var(--muted); min-height: 18px; }
+    .status.ok { color: #86efac; }
+    .status.warn { color: #fcd34d; }
+    .status.err { color: #fda4af; }
+    .my-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+    .list li { background: var(--panel-2); border: 1px solid #31466f; border-radius: 10px; padding: 10px; }
+    .list strong { display: block; margin-bottom: 3px; }
+    .tiny { color: var(--muted); font-size: 12px; }
+    .input, .select, .textarea {
+      width: 100%;
+      margin-top: 8px;
+      border: 1px solid #365283;
+      background: #101b30;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px;
+      font-size: 13px;
+    }
+    .textarea { min-height: 76px; resize: vertical; }
+    .location-line { font-family: Consolas, monospace; font-size: 11px; color: #c9d8f7; }
+    .tag { display: inline-block; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; margin-top: 5px; }
+    .tag.incomplete { background: rgba(239,68,68,.15); color: #fca5a5; border: 1px solid rgba(239,68,68,.35); }
+    .tag.progress { background: rgba(245,158,11,.15); color: #fcd34d; border: 1px solid rgba(245,158,11,.35); }
+    .tag.complete { background: rgba(34,197,94,.15); color: #86efac; border: 1px solid rgba(34,197,94,.35); }
+    .location { font-family: Consolas, monospace; font-size: 12px; color: #c9d8f7; }
+    .employee-mini-map { position:relative; height:220px; border-radius:14px; overflow:hidden; border:1px solid var(--line); margin-top:8px; background:#0a1626; }
+    .employee-mini-map iframe { width:100%; height:100%; border:0; }
+    .route-btn { border:none; border-radius:999px; padding:6px 10px; font-size:11px; font-weight:700; cursor:pointer; background:var(--accent-2, #38bdf8); color:#071220; margin-left:6px; }
+    .compliance-panel { margin-top:12px; padding:14px; border:1px solid rgba(251,191,36,.35); border-radius:14px; background:rgba(251,191,36,.08); }
+    .compliance-panel-head { display:flex; justify-content:space-between; gap:12px; color:var(--text); }
+    .compliance-panel-head span, .compliance-panel-help, .compliance-panel-item span { color:var(--muted); font-size:12px; }
+    .compliance-panel-help { margin:7px 0 0; }
+    .compliance-panel-list { display:grid; gap:8px; margin-top:10px; }
+    .compliance-panel-item { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:10px; border:1px solid rgba(255,255,255,.1); border-radius:10px; background:rgba(255,255,255,.03); }
+    .compliance-panel-item strong { display:block; margin-bottom:3px; }
+    .compliance-panel-item button { border:1px solid rgba(45,212,191,.4); border-radius:999px; padding:7px 10px; background:rgba(45,212,191,.14); color:var(--text); cursor:pointer; font-weight:700; }
+    .compliance-panel-item.resolved { border-color:rgba(45,212,191,.35); }
+    .compliance-panel-empty { color:var(--muted); font-size:12px; }
+    .notice-card { margin-bottom:12px; background:linear-gradient(135deg, rgba(56,189,248,.14), rgba(45,212,191,.1)); border:1px solid rgba(56,189,248,.35); }
+    .guide { margin:8px 0 0; padding-left:18px; color:var(--muted); }
+    .guide li { margin-bottom:6px; }
+    .guide strong { color:var(--text); }
+    .summary-pies { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:10px; margin-top:10px; margin-bottom:10px; }
+    .pie-card { background:var(--panel-2); border:1px solid #31466f; border-radius:10px; padding:10px; display:flex; align-items:center; gap:10px; }
+    .pie { width:54px; height:54px; border-radius:50%; border:1px solid rgba(255,255,255,.22); }
+    .pie-meta { display:grid; gap:2px; }
+    .pie-meta strong { font-size:14px; line-height:1.1; }
+    .pie-meta .tiny { font-size:11px; }
+    .summary-legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:6px; margin-bottom:8px; }
+    .summary-legend span { display:inline-flex; align-items:center; gap:6px; }
+    .summary-legend i { width:10px; height:10px; border-radius:999px; display:inline-block; }
+    .client-pie-list li { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .client-pie-main { min-width:0; }
+    .mini-pie { width:42px; height:42px; border-radius:50%; border:1px solid rgba(255,255,255,.2); flex:0 0 auto; }
+    @media (max-width: 780px) {
+      .wrap { padding:14px; }
+      .top { flex-direction:column; align-items:flex-start; }
+      .chip { align-self:flex-start; }
+      .nav-links { width:100%; gap:8px; }
+      .nav-link { flex:1 1 calc(50% - 8px); text-align:center; padding:9px 10px; }
+      .actions .btn { flex:1 1 calc(50% - 10px); text-align:center; }
+      .stats { grid-template-columns: 1fr; }
+      .my-grid { grid-template-columns: 1fr; }
+      .summary-pies { grid-template-columns:1fr; }
+    }
+    @media (max-width: 520px) {
+      .nav-link { flex-basis:100%; }
+      .actions .btn { flex-basis:100%; }
+    }
+  </style>
+
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+  <script src='auth.js'></script>
+  <link rel="stylesheet" href="complaint.css" />
+  <script>if (window.__FIELDTRACK_AUTH) { window.__FIELDTRACK_AUTH.guardPage(); }</script>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="brand">
+        <h1>Employee Dashboard</h1>
+        <p id="employeeTopHint">Your own app: clock, assignments, and live location</p>
+        <div class="nav-links">
+          <a class="nav-link" href="index.html">Home</a>
+          <a class="nav-link" href="manager-how-to-use.html">How to Use</a>
+          <a class="nav-link" href="manger.html">Manager</a>
+          <a class="nav-link" href="gps.html">GPS Command Center</a>
+          <a class="nav-link" href="employees.html">Employees</a>
+          <a class="nav-link" href="accountant.html">Accountant</a>
+        </div>
+      </div>
+      <div class="chip" id="employeeChip">Employee: ahmed</div>
+    </div>
+    <div class="tiny" id="employeeProfileMeta" style="margin-bottom:8px;"></div>
+
+    <div class="card notice-card">
+      <div class="label">How to Use</div>
+      <ol class="guide">
+        <li><strong>Step 1:</strong> Use Clock actions to generate activity.</li>
+        <li><strong>Step 2:</strong> Complete assignments and add visitation.</li>
+        <li><strong>Step 3:</strong> Review manager and GPS pages for the full command center view.</li>
+      </ol>
+    </div>
+
+    <div class="grid stats">
+      <div class="card"><div class="label">Worked Today</div><div class="value" id="workedToday">0h 00m</div></div>
+      <div class="card"><div class="label">Break Today</div><div class="value" id="breakToday">0m</div></div>
+      <div class="card"><div class="label">Shift Status</div><div class="value" id="shiftStatus">Off Duty</div></div>
+      <div class="card"><div class="label">My Visit Progress</div><div class="value" id="targetProgress">0/0</div></div>
+      <div class="card"><div class="label">Assignments</div><div class="value" id="assignmentCount">0</div></div>
+      <div class="card"><div class="label">Visit Logs Done</div><div class="value" id="visitationDoneRevenue">0</div></div>
+      <div class="card"><div class="label">Visit Logs Left</div><div class="value" id="visitationLeftRevenue">0</div></div>
+    </div>
+
+    <div class="compliance-panel" data-compliance-panel></div>
+
+    <section class="card complaint-card">
+      <h2>Report a complaint or issue</h2>
+      <p>Tell support what happened. You can send an email or call directly.</p>
+      <div class="complaint-contact">
+        <a id="complaintEmailLink" href="mailto:abassmahmoud@gmail.com">Email abassmahmoud@gmail.com</a>
+        <a id="complaintPhoneLink" href="tel:+97433775363">Call +974 33775363</a>
+        <a id="complaintWhatsappLink" href="https://wa.me/97433775363?text=Hello%2C%20I%20want%20to%20report%20a%20complaint.">WhatsApp +974 33775363</a>
+      </div>
+      <form class="complaint-form" id="complaintForm">
+        <select id="complaintCategory" aria-label="Complaint category">
+          <option value="Attendance">Attendance problem</option>
+          <option value="GPS">GPS or location problem</option>
+          <option value="Assignment">Assignment problem</option>
+          <option value="Account">Account or login problem</option>
+          <option value="Other">Other complaint</option>
+        </select>
+        <textarea id="complaintDescription" placeholder="Describe what went wrong and include the date or project if relevant." required></textarea>
+        <div class="complaint-actions"><button type="submit" data-channel="email">Send by Email</button><button type="submit" data-channel="whatsapp">Send by WhatsApp</button></div>
+        <div class="complaint-status" id="complaintStatus">Your complaint will open in your email app.</div>
+      </form>
+    </section>
+
+    <section class="card suggestion-card">
+      <h2>Send a suggestion</h2>
+      <p>Share an idea or improvement. It goes to the same support contact.</p>
+      <div class="complaint-contact">
+        <a id="suggestionEmailLink" href="mailto:abassmahmoud@gmail.com">Email abassmahmoud@gmail.com</a>
+        <a id="suggestionPhoneLink" href="tel:+97433775363">Call +974 33775363</a>
+        <a id="suggestionWhatsappLink" href="https://wa.me/97433775363?text=Hello%2C%20I%20have%20a%20suggestion.">WhatsApp +974 33775363</a>
+      </div>
+      <form class="complaint-form" id="suggestionForm">
+        <select id="suggestionCategory" aria-label="Suggestion category">
+          <option value="Process">Process improvement</option>
+          <option value="App">App or feature idea</option>
+          <option value="Schedule">Schedule or workload</option>
+          <option value="Other">Other suggestion</option>
+        </select>
+        <textarea id="suggestionDescription" placeholder="Describe your suggestion or idea." required></textarea>
+        <div class="complaint-actions"><button type="submit" data-channel="email">Send by Email</button><button type="submit" data-channel="whatsapp">Send by WhatsApp</button></div>
+        <div class="complaint-status" id="suggestionStatus">Your suggestion will open in your email app.</div>
+      </form>
+    </section>
+      <div class="actions">
+        <button class="btn in" onclick="clockAction('in')">Clock In</button>
+        <button class="btn out" onclick="clockAction('out')">Clock Out</button>
+        <button class="btn break" id="breakBtn" onclick="toggleBreak()">Start Break</button>
+        <button class="btn map" onclick="refreshLocation()">Refresh Location</button>
+      </div>
+      <div class="status" id="clockStatus"></div>
+      <div class="tiny">Last event: <span id="lastEvent">--</span></div>
+      <div class="tiny">Current location:</div>
+      <div class="location" id="locationText">--</div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="label">My GPS Map</div>
+      <select class="select" id="employeeMapProjectSelect" onchange="selectEmployeeMapProject(this.value)">
+        <option value="">Auto (route to project when it starts)</option>
+      </select>
+      <div class="employee-mini-map">
+        <iframe id="employeeMapFrame" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="My route to project"></iframe>
+      </div>
+      <div class="tiny" id="employeeMapStatus" style="margin-top:8px;">Pick a project below, or it will auto-route when the project starts.</div>
+    </div>
+
+    <div class="my-grid" style="margin-top:12px;">
+      <div class="card">
+        <div class="label">Request To Manager</div>
+        <select class="select" id="requestType">
+          <option value="sick_leave">Sick Leave</option>
+          <option value="late_notice">Late</option>
+        </select>
+        <input class="input" id="requestDate" type="date" />
+        <input class="input" id="requestShift" placeholder="Expected arrival time if late (example: 10:30)" />
+        <textarea class="textarea" id="requestReason" placeholder="Reason for this request"></textarea>
+        <div class="actions">
+          <button class="btn map" onclick="submitEmployeeRequest()">Send To Manager</button>
+        </div>
+        <div class="tiny" id="requestStatus">No request sent.</div>
+      </div>
+      <div class="card">
+        <div class="label">My Requests</div>
+        <ul class="list" id="requestList"></ul>
+      </div>
+    </div>
+
+    <div class="my-grid" style="margin-top:12px;">
+      <div class="card">
+        <div class="label" id="assignmentLabel">My Assignments</div>
+        <ul class="list" id="assignmentList"></ul>
+      </div>
+      <div class="card">
+        <div class="label">Today Activity</div>
+        <ul class="list" id="activityList"></ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="label">Upcoming Visitations</div>
+      <ul class="list" id="upcomingVisitationsList"></ul>
+    </div>
+
+    <div class="my-grid" style="margin-top:12px;">
+      <div class="card">
+        <div class="label">GPS Location History</div>
+        <ul class="list" id="locationHistoryList"></ul>
+      </div>
+      <div class="card" id="addVisitationCard">
+        <div class="label" id="visitFormLabel">Add Visitation</div>
+        <select class="select" id="visitProjectTarget"></select>
+        <div class="tiny">Select an existing project, or leave blank and fill client/project name below to request a new project (needs manager approval).</div>
+        <input class="input" id="visitClient" placeholder="Client name (example: Nissan)" oninput="checkNoProjectSuggestion()" />
+        <input class="input" id="visitProjectName" placeholder="Project name" />
+        <div class="tiny" id="visitNoProjectHint" style="display:none;">No project found for this client yet.
+          <button type="button" class="btn map" style="padding:4px 10px;margin-left:6px;" onclick="suggestMarketingVisitation()">Log Marketing Visitation instead</button>
+        </div>
+        <input class="input" id="visitRequiredCount" type="number" min="1" step="1" value="1" placeholder="Required visits" />
+        <input class="input" id="visitProjectPrice" type="number" min="0" step="0.01" value="0" placeholder="Visitation price (QAR)" />
+        <select class="select" id="visitType">
+          <option value="Site Check">Site Check</option>
+          <option value="Client Visit">Client Visit</option>
+          <option value="Inspection">Inspection</option>
+          <option value="Delivery">Delivery</option>
+          <option value="Support">Support</option>
+        </select>
+        <input class="input" id="visitSite" placeholder="Site / Client name" />
+        <textarea class="textarea" id="visitNote" placeholder="What happened in this visit?"></textarea>
+        <div class="actions">
+          <button class="btn map" onclick="addVisitation()">Save Visitation</button>
+        </div>
+        <div class="tiny" id="visitStatus">No new visitation saved.</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="label">Visitation History</div>
+      <ul class="list" id="visitationList"></ul>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div class="label">My Progress By Client</div>
+      <div class="tiny" id="clientVisitSummaryMeta">No clients yet.</div>
+      <div class="tiny summary-legend"><span><i style="background:#22c55e;"></i>Visits Completed</span><span><i style="background:#f59e0b;"></i>Visits Remaining</span><span><i style="background:#38bdf8;"></i>Clients</span></div>
+      <div class="summary-pies" id="clientVisitSummaryCharts"></div>
+      <ul class="list client-pie-list" id="clientVisitSummaryList"></ul>
+    </div>
+
+    <div class="my-grid" style="margin-top:12px;">
+      <div class="card" id="marketingVisitationCard">
+        <div class="label" id="marketingLabel">Marketing Visitation</div>
+        <input class="input" id="marketingVisitation" placeholder="Marketing visitation" />
+        <input class="input" id="marketingClientName" placeholder="Client name" />
+        <input class="input" id="marketingClientPhone" placeholder="Phone number" />
+        <textarea class="textarea" id="marketingNote" placeholder="Marketing notes"></textarea>
+        <div class="actions">
+          <button class="btn map" onclick="addMarketingVisitation()">Save Marketing Visitation</button>
+        </div>
+        <div class="tiny" id="marketingStatus">No new marketing visitation saved.</div>
+      </div>
+      <div class="card">
+        <div class="label">Marketing Visitation History</div>
+        <ul class="list" id="marketingVisitationList"></ul>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px;" id="excel-export">
+      <div class="label">Export Excel</div>
+      <div class="tiny">Same export feature for employee, manager, and accountant.</div>
+      <div class="actions">
+        <select class="select" id="exportWeek" onchange="updateExportWeekStatus()"></select>
+        <button class="btn map" onclick="exportAllExcel()">Export Excel</button>
+      </div>
+      <div class="tiny" id="exportStatus">Select a week then export.</div>
+    </div>
+
+  </div>
+
+  <script src="compliance.js"></script>
+  <script src="complaint.js"></script>
+  <script src="suggestion.js"></script>
+  <script>
+    const CLOCK_KEY = 'EMPLOYEE_APP_CLOCK';
+    const ASSIGN_KEY = 'FIELDTRACK_ASSIGNMENTS';
+    const VISIT_KEY = 'EMPLOYEE_APP_VISITATIONS';
+    const VISIT_APPROVAL_KEY = 'FIELDTRACK_VISITATION_APPROVALS';
+    const STAFF_REQUEST_KEY = 'FIELDTRACK_STAFF_REQUESTS';
+    const MARKETING_VISIT_KEY = 'EMPLOYEE_APP_MARKETING_VISITATIONS';
+    const PROJECT_TARGET_KEY = 'FIELDTRACK_PROJECT_VISIT_TARGETS';
+    const APPOINTMENT_KEY = 'FIELDTRACK_VISIT_APPOINTMENTS';
+    const EMPLOYEE_PROFILE_KEY = 'FIELDTRACK_EMPLOYEE_PROFILES';
+    const ARRIVAL_RADIUS_METERS = 45;
+    const DEFAULT_USER = 'ahmed';
+    const DEFAULT_EMPLOYEE_PROFILES = {
+      ahmed: { type: 'sales', manager: 'sara', allowVisitation: true, allowMarketing: true },
+      noor: { type: 'asbuilt', manager: 'omar', allowVisitation: true, allowMarketing: false },
+      yousef: { type: 'supervision', manager: 'laila', allowVisitation: false, allowMarketing: false },
+      employee1: { type: 'sales', manager: 'manager1', allowVisitation: true, allowMarketing: true }
+    };
+    function getState() {
+      try { return JSON.parse(localStorage.getItem(CLOCK_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function setState(state) { localStorage.setItem(CLOCK_KEY, JSON.stringify(state)); }
+    function getVisitStore() {
+      try { return JSON.parse(localStorage.getItem(VISIT_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function setVisitStore(store) { localStorage.setItem(VISIT_KEY, JSON.stringify(store)); }
+    function getMarketingVisitStore() {
+      try { return JSON.parse(localStorage.getItem(MARKETING_VISIT_KEY) || '{}'); } catch (e) { return {}; }
+    }
+    function setMarketingVisitStore(store) { localStorage.setItem(MARKETING_VISIT_KEY, JSON.stringify(store)); }
+    function getVisitationApprovals() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(VISIT_APPROVAL_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveVisitationApprovals(items) {
+      localStorage.setItem(VISIT_APPROVAL_KEY, JSON.stringify(Array.isArray(items) ? items : []));
+    }
+    function getStaffRequests() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(STAFF_REQUEST_KEY) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveStaffRequests(items) {
+      localStorage.setItem(STAFF_REQUEST_KEY, JSON.stringify(Array.isArray(items) ? items : []));
+    }
+    function getUserStaffRequests() {
+      return getStaffRequests()
+        .filter((item) => String(item.employee || '').toLowerCase() === currentUser())
+        .sort((a, b) => new Date(b.submittedAt || 0) - new Date(a.submittedAt || 0));
+    }
+    function setRequestStatus(msg) {
+      const el = document.getElementById('requestStatus');
+      if (el) el.textContent = msg;
+    }
+    function currentUser() { return (localStorage.getItem('employeeUsername') || DEFAULT_USER).toLowerCase(); }
+    function ensureEmployeeProfiles() {
+      const stored = (() => {
+        try { return JSON.parse(localStorage.getItem(EMPLOYEE_PROFILE_KEY) || '{}'); } catch (e) { return {}; }
+      })();
+      const merged = { ...DEFAULT_EMPLOYEE_PROFILES, ...(stored && typeof stored === 'object' ? stored : {}) };
+      localStorage.setItem(EMPLOYEE_PROFILE_KEY, JSON.stringify(merged));
+      return merged;
+    }
+    function getEmployeeProfile() {
+      const profiles = ensureEmployeeProfiles();
+      const profile = profiles[currentUser()] || profiles.employee1 || {};
+      const normalizedType = String(profile.type || 'supervision').toLowerCase().replace(/[^a-z0-9]+/g, '');
+      const type = normalizedType === 'asbuilt'
+        ? 'asbuilt'
+        : (normalizedType === 'sales' ? 'sales' : (normalizedType === 'engineer' ? 'engineer' : 'supervision'));
+      return {
+        type,
+        manager: String(profile.manager || 'manager1'),
+        // Sales and Asbuilt must always be able to create visitation entries.
+        allowVisitation: type === 'sales' || type === 'asbuilt' || type === 'engineer' ? true : Boolean(profile.allowVisitation),
+        allowMarketing: Boolean(profile.allowMarketing || type === 'sales')
+      };
+    }
+    function applyEmployeeProfileUi() {
+      const profile = getEmployeeProfile();
+      const typeLabel = profile.type === 'asbuilt'
+        ? 'Asbuilt'
+        : (profile.type === 'sales' ? 'Sales' : (profile.type === 'engineer' ? 'Engineer' : 'Supervision'));
+      const chipNode = document.getElementById('employeeChip');
+      const topHintNode = document.getElementById('employeeTopHint');
+      const metaNode = document.getElementById('employeeProfileMeta');
+      const assignmentLabel = document.getElementById('assignmentLabel');
+      const visitFormLabel = document.getElementById('visitFormLabel');
+      const marketingLabel = document.getElementById('marketingLabel');
+      const addVisitationCard = document.getElementById('addVisitationCard');
+      const marketingCard = document.getElementById('marketingVisitationCard');
+      if (chipNode) chipNode.textContent = 'Employee: ' + currentUser() + ' | ' + typeLabel;
+      if (topHintNode) {
+        if (profile.type === 'sales') topHintNode.textContent = 'Sales dashboard: client follow-up, marketing, and visit tracking.';
+        else if (profile.type === 'asbuilt') topHintNode.textContent = 'Asbuilt dashboard: technical visit logging and project documentation.';
+        else if (profile.type === 'engineer') topHintNode.textContent = 'Engineer dashboard: technical assignments, site work, and visit tracking.';
+        else topHintNode.textContent = 'Supervision dashboard: monitor teams and assignment progress.';
+      }
+      if (metaNode) metaNode.textContent = 'Manager: ' + profile.manager + ' | Setup: ' + typeLabel;
+      if (assignmentLabel) assignmentLabel.textContent = profile.type === 'supervision' ? 'Supervision Tasks' : 'My Assignments';
+      if (visitFormLabel) visitFormLabel.textContent = profile.type === 'sales' ? 'Create Sales Visitation' : 'Create Visitation';
+      if (marketingLabel) marketingLabel.textContent = profile.type === 'sales' ? 'Sales Marketing Visitation' : 'Marketing Visitation';
+      if (addVisitationCard) addVisitationCard.style.display = profile.allowVisitation ? '' : 'none';
+      if (marketingCard) marketingCard.style.display = profile.allowMarketing ? '' : 'none';
+    }
+    function fmtMs(ms) {
+      const mins = Math.max(0, Math.floor(ms / 60000));
+      const h = Math.floor(mins / 60);
+      const m = mins % 60;
+      return h + 'h ' + String(m).padStart(2, '0') + 'm';
+    }
+    function workedMs() {
+      const s = getState();
+      let total = Number(s.totalMs || 0);
+      if (s.activeInAt) {
+        const sessionElapsed = Math.max(0, Date.now() - new Date(s.activeInAt).getTime());
+        const breakMs = breakMsForCurrentSession(s);
+        total += Math.max(0, sessionElapsed - breakMs);
+      }
+      return total;
+    }
+    function breakMsForCurrentSession(state) {
+      const s = state || getState();
+      const stored = Number(s.sessionBreakMs || 0);
+      if (s.breakActiveAt) {
+        return stored + Math.max(0, Date.now() - new Date(s.breakActiveAt).getTime());
+      }
+      return stored;
+    }
+    function breakTotalMs() {
+      const s = getState();
+      return Number(s.breakTotalMs || 0) + (s.breakActiveAt ? Math.max(0, Date.now() - new Date(s.breakActiveAt).getTime()) : 0);
+    }
+    function fmtBreak(ms) {
+      const mins = Math.max(0, Math.floor(ms / 60000));
+      return mins + 'm';
+    }
+    function money(value) {
+      const amount = Number(value || 0);
+      return 'QAR ' + (Number.isFinite(amount) ? amount.toFixed(amount % 1 === 0 ? 0 : 2) : '0');
+    }
+    function formatVisitPrice(value) {
+      const amount = Number(value || 0);
+      return 'QAR ' + (Number.isFinite(amount) ? amount.toFixed(amount % 1 === 0 ? 0 : 2) : '0');
+    }
+    function setStatus(msg, kind) {
+      const el = document.getElementById('clockStatus');
+      el.textContent = msg;
+      el.className = 'status ' + (kind || '');
+    }
+    function setVisitStatus(msg) {
+      const el = document.getElementById('visitStatus');
+      if (el) el.textContent = msg;
+    }
+    function setMarketingVisitStatus(msg) {
+      const el = document.getElementById('marketingStatus');
+      if (el) el.textContent = msg;
+    }
+    function getUserVisitations() {
+      const store = getVisitStore();
+      return Array.isArray(store[currentUser()]) ? store[currentUser()] : [];
+    }
+    function getUserMarketingVisitations() {
+      const store = getMarketingVisitStore();
+      return Array.isArray(store[currentUser()]) ? store[currentUser()] : [];
+    }
+    function getVisitationRevenueSummary() {
+      const logs = getUserVisitations();
+      const assignments = getUserAssignments();
+      const targets = getProjectTargets();
+      const assignmentProjectIds = new Set();
+
+      assignments.forEach((item) => {
+        const client = String(item.clientName || '').trim();
+        const project = String(item.projectName || item.destination || '').trim();
+        if (!client || !project) return;
+        assignmentProjectIds.add(buildProjectId(client, project));
+      });
+
+      // Fallback for users with logs but no active assignment rows yet.
+      if (!assignmentProjectIds.size) {
+        logs.forEach((item) => {
+          const client = String(item.clientName || '').trim();
+          const project = String(item.projectName || '').trim();
+          if (!client || !project) return;
+          assignmentProjectIds.add(buildProjectId(client, project));
+        });
+      }
+
+      const projectIds = Array.from(assignmentProjectIds);
+      const requiredTotal = projectIds.reduce((sum, projectId) => {
+        const target = targets[projectId];
+        if (target) return sum + Math.max(0, Number(target.requiredVisits || 0));
+
+        const fallbackFromAssignment = assignments.reduce((max, item) => {
+          const client = String(item.clientName || '').trim();
+          const project = String(item.projectName || item.destination || '').trim();
+          if (buildProjectId(client, project) !== projectId) return max;
+          return Math.max(max, Number(item.requiredVisits || 0));
+        }, 0);
+
+        const fallbackFromLogs = logs.filter((item) => {
+          const client = String(item.clientName || '').trim();
+          const project = String(item.projectName || '').trim();
+          return buildProjectId(client, project) === projectId;
+        }).reduce((max, item) => {
+          return Math.max(max, Number(item.requiredVisits || 0));
+        }, 0);
+
+        const fallbackRequired = Math.max(fallbackFromAssignment, fallbackFromLogs);
+        return sum + Math.max(0, fallbackRequired);
+      }, 0);
+
+      const logsDone = logs.filter((item) => {
+        const client = String(item.clientName || '').trim();
+        const project = String(item.projectName || '').trim();
+        if (!client || !project) return false;
+        return assignmentProjectIds.has(buildProjectId(client, project));
+      }).length;
+
+      const logsLeft = Math.max(0, requiredTotal - logsDone);
+      return { done: logsDone, left: logsLeft };
+    }
+    function getEmployeeTargetSummary() {
+      const assignments = getUserAssignments();
+      const targets = getProjectTargets();
+      const seen = new Set();
+      const logs = getUserVisitations();
+      const assignmentProjectIds = new Set();
+      let required = 0;
+
+      assignments.forEach((item) => {
+        const client = String(item.clientName || '').trim();
+        const project = String(item.projectName || item.destination || '').trim();
+        if (!client || !project) return;
+        const projectId = buildProjectId(client, project);
+        assignmentProjectIds.add(projectId);
+        if (seen.has(projectId)) return;
+        seen.add(projectId);
+        const target = targets[projectId] || null;
+        if (target) {
+          required += Math.max(0, Number(target.requiredVisits || 0));
+        } else {
+          required += Math.max(0, Number(item.requiredVisits || 0));
+        }
+      });
+
+      if (!assignmentProjectIds.size) {
+        logs.forEach((item) => {
+          const client = String(item.clientName || '').trim();
+          const project = String(item.projectName || '').trim();
+          if (!client || !project) return;
+          assignmentProjectIds.add(buildProjectId(client, project));
+        });
+      }
+
+      const completed = logs.filter((item) => {
+        const client = String(item.clientName || '').trim();
+        const project = String(item.projectName || '').trim();
+        if (!client || !project) return false;
+        return assignmentProjectIds.has(buildProjectId(client, project));
+      }).length;
+
+      return {
+        required,
+        completed: Math.min(completed, required)
+      };
+    }
+    function getLatestApprovedShiftPlan() {
+      const approvedShift = getUserStaffRequests()
+        .filter((item) => String(item.type || '') === 'shift_swap')
+        .filter((item) => String(item.status || '') === 'approved')
+        .find((item) => item.appliedShift || item.requestedShift);
+      return approvedShift ? String(approvedShift.appliedShift || approvedShift.requestedShift || '').trim() : '';
+    }
+    function isOnApprovedSickLeaveToday() {
+      const today = new Date();
+      const todayKey = today.toISOString().slice(0, 10);
+      return getUserStaffRequests()
+        .some((item) => String(item.type || '') === 'sick_leave' && String(item.status || '') === 'approved' && String(item.requestedDate || '') === todayKey);
+    }
+    function isOnApprovedLateToday() {
+      const today = new Date();
+      const todayKey = today.toISOString().slice(0, 10);
+      return getUserStaffRequests()
+        .some((item) => String(item.type || '') === 'late_notice' && String(item.status || '') === 'approved' && String(item.requestedDate || '') === todayKey);
+    }
+    function saveUserVisitations(items) {
+      const store = getVisitStore();
+      store[currentUser()] = items;
+      setVisitStore(store);
+    }
+    function saveUserMarketingVisitations(items) {
+      const store = getMarketingVisitStore();
+      store[currentUser()] = items;
+      setMarketingVisitStore(store);
+    }
+    function getProjectTargets() {
+      try {
+        const raw = localStorage.getItem(PROJECT_TARGET_KEY);
+        const parsed = raw ? JSON.parse(raw) : {};
+        return parsed && typeof parsed === 'object' ? parsed : {};
+      } catch (e) {
+        return {};
+      }
+    }
+    function saveProjectTargets(targets) {
+      localStorage.setItem(PROJECT_TARGET_KEY, JSON.stringify(targets || {}));
+    }
+    function getAppointmentItems() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(APPOINTMENT_KEY) || '{}');
+        return Array.isArray(parsed.items) ? parsed.items : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    function saveAppointmentItems(items) {
+      localStorage.setItem(APPOINTMENT_KEY, JSON.stringify({ items: items || [] }));
+    }
+    function getAssignmentStore() {
+      try {
+        const parsed = JSON.parse(localStorage.getItem(ASSIGN_KEY) || '{}');
+        return parsed && typeof parsed === 'object' ? parsed : {};
+      } catch (e) {
+        return {};
+      }
+    }
+    function setAssignmentStore(store) {
+      localStorage.setItem(ASSIGN_KEY, JSON.stringify(store || {}));
+      localStorage.setItem(ASSIGN_KEY + '_updatedAt', new Date().toISOString());
+    }
+    function getUserAssignments() {
+      const store = getAssignmentStore();
+      return Array.isArray(store[currentUser()]) ? store[currentUser()] : [];
+    }
+    function saveUserAssignments(items) {
+      const store = getAssignmentStore();
+      store[currentUser()] = Array.isArray(items) ? items : [];
+      setAssignmentStore(store);
+    }
+    function getAssignmentCoordinates(item) {
+      if (!item || typeof item !== 'object') return null;
+      const lat = Number(item.projectLat ?? item.lat ?? item.latitude ?? item.locationLat ?? (item.location && item.location.lat));
+      const lng = Number(item.projectLng ?? item.lng ?? item.longitude ?? item.locationLng ?? (item.location && item.location.lng));
+      if (Number.isFinite(lat) && Number.isFinite(lng)) return { lat, lng };
+      return null;
+    }
+    function parseCoordsString(value) {
+      const parts = String(value || '').split(',').map((part) => Number(part.trim()));
+      if (parts.length === 2 && Number.isFinite(parts[0]) && Number.isFinite(parts[1])) return { lat: parts[0], lng: parts[1] };
+      return null;
+    }
+    function getEmployeeCoordinates() {
+      if (liveEmployeeCoords) return liveEmployeeCoords;
+      const s = getState();
+      const history = Array.isArray(s.locationHistory) ? s.locationHistory : [];
+      if (history.length) {
+        const parsed = parseCoordsString(history[0].coords);
+        if (parsed) return parsed;
+      }
+      return parseCoordsString(s.lastLocation);
+    }
+    let liveEmployeeCoords = null;
+    function startLiveEmployeeTracking() {
+      if (!navigator.geolocation) return;
+      navigator.geolocation.watchPosition((pos) => {
+        liveEmployeeCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        renderEmployeeMap();
+      }, () => {}, { enableHighAccuracy: true, maximumAge: 10000, timeout: 20000 });
+    }
+    let activeMapAssignmentId = null;
+    window.selectEmployeeMapProject = function(id) {
+      activeMapAssignmentId = id || null;
+      renderEmployeeMap();
+    };
+    window.focusAssignmentOnMap = function(id) {
+      activeMapAssignmentId = id;
+      const targetAssignment = getUserAssignments().find((item) => String(item.id) === String(id));
+      const coords = targetAssignment ? getAssignmentCoordinates(targetAssignment) : null;
+      if (targetAssignment && coords && navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const dist = distanceMeters(pos.coords.latitude, pos.coords.longitude, coords.lat, coords.lng);
+          if (dist <= ARRIVAL_RADIUS_METERS) {
+            window.markAssignmentArrived(id, { skipConfirm: true });
+            return;
+          }
+          renderEmployeeMap();
+        }, () => {
+          renderEmployeeMap();
+        }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+      } else {
+        renderEmployeeMap();
+      }
+      const mapCard = document.getElementById('employeeMapFrame');
+      if (mapCard) mapCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    function pickAutoRouteAssignment(pendingList) {
+      const now = Date.now();
+      const withAppt = pendingList.map((item) => {
+        const progress = getAssignmentVisitProgress(item);
+        const nextAppt = getNextPendingAppointmentForProject(progress.projectId);
+        const scheduledTs = nextAppt && nextAppt.scheduledAt ? new Date(nextAppt.scheduledAt).getTime() : null;
+        return { item, scheduledTs };
+      });
+      const started = withAppt.filter((entry) => entry.scheduledTs !== null && entry.scheduledTs <= now);
+      if (started.length) {
+        started.sort((a, b) => b.scheduledTs - a.scheduledTs);
+        return started[0].item;
+      }
+      const upcoming = withAppt.filter((entry) => entry.scheduledTs !== null && entry.scheduledTs > now);
+      if (upcoming.length) {
+        upcoming.sort((a, b) => a.scheduledTs - b.scheduledTs);
+        return upcoming[0].item;
+      }
+      return pendingList[0] || null;
+    }
+    function getAssignmentDestinationQuery(item) {
+      const parts = [
+        item && (item.destination || item.site || item.projectName || ''),
+        item && (item.clientName || ''),
+        item && (item.projectName || item.destination || '')
+      ].filter(Boolean);
+      return parts.join(' ');
+    }
+
+    function renderEmployeeMap() {
+      const frame = document.getElementById('employeeMapFrame');
+      const status = document.getElementById('employeeMapStatus');
+      if (!frame || !status) return;
+      const pendingList = getUserAssignments().filter((item) => getAssignmentVisitProgress(item).remaining > 0);
+      let target = activeMapAssignmentId ? pendingList.find((item) => String(item.id) === String(activeMapAssignmentId)) : null;
+      if (!target && !activeMapAssignmentId) {
+        target = pickAutoRouteAssignment(pendingList);
+      }
+      populateEmployeeMapProjectSelect(pendingList, target);
+      if (!target) {
+        frame.src = '';
+        status.textContent = 'No pending project to route to yet.';
+        return;
+      }
+      const label = target.projectName || target.destination || 'Project';
+      const projectCoords = getAssignmentCoordinates(target);
+      const destinationQuery = encodeURIComponent(getAssignmentDestinationQuery(target) || label);
+      const progress = getAssignmentVisitProgress(target);
+      const nextAppt = getNextPendingAppointmentForProject(progress.projectId);
+      const scheduledTs = nextAppt && nextAppt.scheduledAt ? new Date(nextAppt.scheduledAt).getTime() : null;
+      const started = scheduledTs === null || scheduledTs <= Date.now();
+      const employeeCoords = getEmployeeCoordinates();
+      if (!projectCoords) {
+        frame.src = `https://www.google.com/maps?q=${destinationQuery}&z=15&output=embed`;
+        status.textContent = 'Showing ' + label + ' using destination search because the saved coordinates are missing.';
+        return;
+      }
+      if (employeeCoords) {
+        frame.src = `https://www.google.com/maps?saddr=${employeeCoords.lat},${employeeCoords.lng}&daddr=${projectCoords.lat},${projectCoords.lng}&output=embed`;
+        const dist = Math.round(distanceMeters(employeeCoords.lat, employeeCoords.lng, projectCoords.lat, projectCoords.lng));
+        const scheduleLine = scheduledTs ? (' Starts ' + new Date(scheduledTs).toLocaleString() + '.') : '';
+        status.textContent = (started ? 'Routing now to ' : 'Upcoming route to ') + label + ' - ' + dist + 'm away.' + scheduleLine;
+      } else {
+        frame.src = `https://www.google.com/maps?q=${projectCoords.lat},${projectCoords.lng}&z=15&output=embed`;
+        status.textContent = 'Showing ' + label + '. Tap Refresh Location to add your position for a route.';
+      }
+    }
+    function populateEmployeeMapProjectSelect(pendingList, target) {
+      const select = document.getElementById('employeeMapProjectSelect');
+      if (!select) return;
+      const options = ['<option value="">Auto (route to project when it starts)</option>'];
+      pendingList.forEach((item) => {
+        const label = (item.clientName || 'Client') + ' - ' + (item.projectName || item.destination || 'Project');
+        options.push('<option value="' + item.id + '">' + label + '</option>');
+      });
+      select.innerHTML = options.join('');
+      select.value = activeMapAssignmentId && target ? String(target.id) : '';
+    }
+    function distanceMeters(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const toRad = (v) => v * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+    function ensureProjectTargetForAssignment(item) {
+      const clientName = String(item.clientName || '').trim();
+      const projectName = String(item.projectName || item.destination || '').trim();
+      if (!clientName || !projectName) return '';
+      const targets = getProjectTargets();
+      const projectId = buildProjectId(clientName, projectName);
+      if (!targets[projectId]) {
+        targets[projectId] = {
+          id: projectId,
+          clientName,
+          projectName,
+          requiredVisits: Math.max(1, Number(item.requiredVisits || 1)),
+          completedVisits: Math.max(0, Number(item.completedVisits || 0)),
+          visitPrice: Math.max(0, Number(item.visitPrice || 0)),
+          updatedAt: new Date().toISOString()
+        };
+      }
+      saveProjectTargets(targets);
+      return projectId;
+    }
+    function prefillVisitationFromAssignment(item) {
+      if (!item) return;
+      const siteEl = document.getElementById('visitSite');
+      const typeEl = document.getElementById('visitType');
+      const noteEl = document.getElementById('visitNote');
+      const clientEl = document.getElementById('visitClient');
+      const projectEl = document.getElementById('visitProjectName');
+      const requiredEl = document.getElementById('visitRequiredCount');
+      const priceEl = document.getElementById('visitProjectPrice');
+      const select = document.getElementById('visitProjectTarget');
+      if (siteEl) siteEl.value = String(item.destination || item.projectName || '').trim();
+      if (typeEl) typeEl.value = String(item.visitType || 'Client Visit');
+      if (noteEl) noteEl.value = 'Arrived on project and verified from phone fingerprint.';
+      if (clientEl) clientEl.value = String(item.clientName || '').trim();
+      if (projectEl) projectEl.value = String(item.projectName || item.destination || '').trim();
+      if (requiredEl) requiredEl.value = String(Math.max(1, Number(item.requiredVisits || 1)));
+      if (priceEl) priceEl.value = String(Math.max(0, Number(item.visitPrice || 0)));
+      const targetId = ensureProjectTargetForAssignment(item);
+      ensureProjectSelect();
+      if (select && targetId) {
+        select.value = targetId;
+        applyTargetToForm();
+      }
+    }
+    function isSameLocalDate(a, b) {
+      return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+    }
+    function getPendingTodayAppointments(userId) {
+      const now = new Date();
+      return getAppointmentItems()
+        .filter((item) => String(item.engineer || '').toLowerCase() === String(userId || '').toLowerCase())
+        .filter((item) => {
+          const dt = new Date(item.scheduledAt || 0);
+          return !isNaN(dt.getTime()) && isSameLocalDate(dt, now) && !item.checkedInAt;
+        })
+        .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
+    }
+    function getNextPendingAppointmentForProject(projectId) {
+      if (!projectId) return null;
+      return getAppointmentItems()
+        .filter((item) => String(item.engineer || '').toLowerCase() === currentUser())
+        .filter((item) => String(item.projectId || '') === String(projectId))
+        .filter((item) => !item.checkedInAt)
+        .sort((a, b) => new Date(a.scheduledAt || 0).getTime() - new Date(b.scheduledAt || 0).getTime())[0] || null;
+    }
+    function getAssignmentVisitProgress(item) {
+      const clientName = String(item && item.clientName || '').trim();
+      const projectName = String(item && (item.projectName || item.destination) || '').trim();
+      const fallbackRequired = Math.max(1, Number(item && item.requiredVisits || 1));
+      const fallbackCompleted = Math.max(0, Number(item && item.completedVisits || 0));
+      const projectId = (item && item.projectId) || (clientName && projectName ? buildProjectId(clientName, projectName) : '');
+      const target = projectId ? getProjectTargets()[projectId] : null;
+      const required = target ? Math.max(1, Number(target.requiredVisits || fallbackRequired)) : fallbackRequired;
+      const completed = target ? Math.max(0, Number(target.completedVisits || 0)) : fallbackCompleted;
+      const remaining = Math.max(0, required - completed);
+      return { projectId, required, completed, remaining };
+    }
+    function buildProjectId(clientName, projectName) {
+      const client = String(clientName || '').trim().toLowerCase();
+      const project = String(projectName || '').trim().toLowerCase();
+      return (client + '__' + project).replace(/[^a-z0-9_]+/g, '-');
+    }
+    function ensureProjectSelect() {
+      const select = document.getElementById('visitProjectTarget');
+      if (!select) return;
+      const current = select.value;
+      const targetsById = getProjectTargets();
+      const assignmentProjects = getUserAssignments()
+        .filter((item) => getAssignmentVisitProgress(item).remaining > 0)
+        .map((item) => {
+          const clientName = String(item.clientName || '').trim();
+          const projectName = String(item.projectName || item.destination || '').trim();
+          if (!clientName || !projectName) return null;
+          const id = buildProjectId(clientName, projectName);
+          return {
+            id,
+            clientName,
+            projectName,
+            requiredVisits: Math.max(1, Number(item.requiredVisits || 1)),
+            completedVisits: Math.max(0, Number(item.completedVisits || 0)),
+            visitPrice: Math.max(0, Number(item.visitPrice || 0)),
+            updatedAt: item.updatedAt || item.assignedAt || new Date().toISOString()
+          };
+        })
+        .filter(Boolean);
+      assignmentProjects.forEach((project) => {
+        if (!targetsById[project.id]) {
+          targetsById[project.id] = project;
+        }
+      });
+      const targets = Object.values(targetsById).sort((a, b) => new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0));
+      const options = ['<option value="">Select project target</option>'];
+      targets.forEach((target) => {
+        const remaining = Math.max(0, Number(target.requiredVisits || 0) - Number(target.completedVisits || 0));
+        options.push('<option value="' + target.id + '">' +
+          (target.clientName || 'Client') + ' • ' + (target.projectName || 'Project') +
+          ' (remaining ' + remaining + '/' + Number(target.requiredVisits || 0) + ', ' + formatVisitPrice(target.visitPrice) + ')' +
+        '</option>');
+      });
+      select.innerHTML = options.join('');
+      if (current && targets.some((target) => target.id === current)) {
+        select.value = current;
+      }
+    }
+    function applyTargetToForm() {
+      const select = document.getElementById('visitProjectTarget');
+      if (!select || !select.value) return;
+      const targetId = String(select.value || '');
+      const target = getProjectTargets()[targetId];
+      if (!target) return;
+      const clientEl = document.getElementById('visitClient');
+      const projectEl = document.getElementById('visitProjectName');
+      const requiredEl = document.getElementById('visitRequiredCount');
+      const priceLine = document.getElementById('visitProjectPrice');
+      const siteEl = document.getElementById('visitSite');
+      const typeEl = document.getElementById('visitType');
+      const noteEl = document.getElementById('visitNote');
+      const assignments = getUserAssignments();
+      const assignment = assignments.find((item) => {
+        const projectName = String(item.projectName || item.destination || '').trim();
+        const clientName = String(item.clientName || '').trim();
+        const itemProjectId = String(item.projectId || buildProjectId(clientName, projectName));
+        return itemProjectId === targetId;
+      }) || null;
+      const nextAppointment = getNextPendingAppointmentForProject(targetId);
+      if (clientEl) clientEl.value = target.clientName || '';
+      if (projectEl) projectEl.value = target.projectName || '';
+      if (requiredEl) requiredEl.value = String(Number(target.requiredVisits || 1));
+      if (priceLine) priceLine.value = String(Number(target.visitPrice || 0));
+      if (siteEl) {
+        siteEl.value = String(
+          (nextAppointment && nextAppointment.site) ||
+          (assignment && (assignment.destination || assignment.projectName)) ||
+          target.projectName ||
+          ''
+        ).trim();
+      }
+      if (typeEl) {
+        typeEl.value = String(
+          (nextAppointment && nextAppointment.type) ||
+          (assignment && assignment.visitType) ||
+          typeEl.value ||
+          'Site Check'
+        );
+      }
+      if (noteEl) {
+        noteEl.value = String(
+          (nextAppointment && nextAppointment.note) ||
+          ('Visitation for ' + (target.projectName || 'project') + ' - fingerprint verified.')
+        );
+      }
+      setVisitStatus('Project info loaded automatically.');
+    }
+    function loadAssignments() {
+      const list = getUserAssignments();
+      const pendingList = list.filter((item) => getAssignmentVisitProgress(item).remaining > 0);
+      document.getElementById('assignmentCount').textContent = pendingList.length;
+      const node = document.getElementById('assignmentList');
+      if (!pendingList.length) {
+        node.innerHTML = '<li><strong>No pending assignments</strong><span class="tiny">All assigned projects have 0 visits left.</span></li>';
+        return;
+      }
+      node.innerHTML = pendingList.slice(0, 8).map(item => {
+        const progress = getAssignmentVisitProgress(item);
+        const st = progress.remaining <= 0
+          ? 'complete'
+          : (progress.completed > 0 || String(item.progressStatus || '').toLowerCase().includes('progress') ? 'progress' : 'incomplete');
+        const status = st === 'complete' ? 'Complete' : st === 'progress' ? 'Progress' : 'Incomplete';
+        const when = item.updatedAt || item.assignedAt || new Date().toISOString();
+        const nextAppt = getNextPendingAppointmentForProject(progress.projectId);
+        const projectLabel = (item.projectName || item.destination || 'Project');
+        const arrivedLine = item.arrivedAt
+          ? '<br><span class="tiny">Arrived: ' + new Date(item.arrivedAt).toLocaleString() + ' • ' + Math.round(Number(item.arrivedDistanceMeters || 0)) + 'm</span>'
+          : '';
+        const remainingLine = '<br><span class="tiny">Visits Left: ' + progress.remaining + ' / ' + progress.required + '</span>';
+        const upcomingLine = nextAppt && nextAppt.scheduledAt
+          ? '<br><span class="tiny">Upcoming: ' + new Date(nextAppt.scheduledAt).toLocaleString() + '</span>'
+          : '';
+        const arriveButton = '<button class="btn map" style="margin-top:8px;padding:6px 10px;font-size:11px;" onclick="markAssignmentArrived(\'' + String(item.id || '').replace(/'/g, "") + '\')">Arrived</button>';
+        const routeButton = '<button class="route-btn" onclick="focusAssignmentOnMap(\'' + String(item.id || '').replace(/'/g, "") + '\')">Show Route</button>';
+        return '<li><strong>' + (item.projectName || item.destination || 'Project') + '</strong>' +
+          '<span class="tiny">' + (item.clientName || 'Client') + ' • ' + new Date(when).toLocaleString() + '</span><br>' +
+          '<span class="tag ' + st + '">' + status + '</span>' + remainingLine + upcomingLine + arrivedLine + '<br>' + arriveButton + routeButton + '</li>';
+      }).join('');
+    }
+    function loadUpcomingVisitations() {
+      const node = document.getElementById('upcomingVisitationsList');
+      if (!node) return;
+      const now = Date.now();
+      const assignments = getUserAssignments();
+      const byProject = {};
+      assignments.forEach((item) => {
+        const progress = getAssignmentVisitProgress(item);
+        if (!progress.remaining) return;
+        const projectKey = progress.projectId || String(item.projectName || item.destination || '').toLowerCase();
+        if (!projectKey) return;
+        const nextAppt = getNextPendingAppointmentForProject(progress.projectId);
+        const scheduledTs = nextAppt && nextAppt.scheduledAt ? new Date(nextAppt.scheduledAt).getTime() : Number.MAX_SAFE_INTEGER;
+        byProject[projectKey] = {
+          name: item.projectName || item.destination || 'Project',
+          client: item.clientName || 'Client',
+          remaining: progress.remaining,
+          required: progress.required,
+          scheduledAt: nextAppt && nextAppt.scheduledAt ? nextAppt.scheduledAt : '',
+          scheduledTs
+        };
+      });
+      const items = Object.values(byProject).sort((a, b) => {
+        return a.scheduledTs - b.scheduledTs;
+      });
+      const scheduledItems = items.filter((item) => item.scheduledAt);
+      if (!scheduledItems.length) {
+        node.innerHTML = '<li><strong>No upcoming visitations</strong><span class="tiny">No pending scheduled visits were found.</span></li>';
+        return;
+      }
+      node.innerHTML = scheduledItems.slice(0, 10).map((item) => {
+        const scheduleText = new Date(item.scheduledAt).toLocaleString();
+        const lateTag = new Date(item.scheduledAt).getTime() < now
+          ? ' <span class="tag incomplete" style="margin-top:0;">Pending</span>'
+          : '';
+        return '<li><strong>' + item.name + lateTag + '</strong>' +
+          '<span class="tiny">' + item.client + ' • Visits Left ' + item.remaining + '/' + item.required + '</span>' +
+          '<br><span class="tiny">Upcoming: ' + scheduleText + '</span></li>';
+      }).join('');
+    }
+    function loadActivity() {
+      const s = getState();
+      const items = Array.isArray(s.activity) ? s.activity : [];
+      const node = document.getElementById('activityList');
+      if (!items.length) {
+        node.innerHTML = '<li><strong>No clock activity</strong><span class="tiny">Clock in/out records will appear here.</span></li>';
+        return;
+      }
+      node.innerHTML = items.slice(0, 8).map(item => '<li><strong>' + item.type + '</strong><span class="tiny">' + new Date(item.time).toLocaleString() + '</span></li>').join('');
+    }
+    function loadLocationHistory() {
+      const s = getState();
+      const node = document.getElementById('locationHistoryList');
+      if (!node) return;
+      const items = Array.isArray(s.locationHistory) ? s.locationHistory : [];
+      if (!items.length) {
+        node.innerHTML = '<li><strong>No GPS history yet</strong><span class="tiny">Tap Refresh Location to store points.</span></li>';
+        return;
+      }
+      node.innerHTML = items.slice(0, 10).map((item) => '<li><strong>' + new Date(item.time).toLocaleString() + '</strong><div class="location-line">' + (item.street || 'Street unavailable') + '<br>' + item.coords + '</div></li>').join('');
+    }
+    function loadVisitationHistory() {
+      const node = document.getElementById('visitationList');
+      if (!node) return;
+      const items = getUserVisitations().slice().sort((a, b) => new Date(b.time) - new Date(a.time));
+      const pendingItems = getVisitationApprovals()
+        .filter((item) => String(item.employee || '').toLowerCase() === currentUser())
+        .filter((item) => String(item.status || 'pending').toLowerCase() === 'pending')
+        .map((item) => ({ ...item, __pending: true }))
+        .sort((a, b) => new Date(b.time || b.submittedAt || 0) - new Date(a.time || a.submittedAt || 0));
+      const allItems = pendingItems.concat(items);
+      if (!allItems.length) {
+        node.innerHTML = '<li><strong>No visitations yet</strong><span class="tiny">Saved visitations will appear here by date.</span></li>';
+        return;
+      }
+      node.innerHTML = allItems.slice(0, 20).map((item) => {
+        const note = item.note ? '<br><span class="tiny">' + item.note + '</span>' : '';
+        const statusLine = item.__pending
+          ? '<br><span class="tiny" style="color:#fcd34d;">Pending manager approval</span>'
+          : '<br><span class="tiny" style="color:#86efac;">Approved</span>';
+        const projectLine = item.projectName
+          ? '<br><span class="tiny">' + (item.clientName || 'Client') + ' • ' + item.projectName +
+            ' • Visits ' + (Number(item.requiredVisits || 0) - Number(item.remainingVisits || 0)) + '/' + (Number(item.requiredVisits || 0)) +
+            ' • Done ' + formatVisitPrice((Number(item.requiredVisits || 0) - Number(item.remainingVisits || 0)) * Number(item.visitPrice || 0)) +
+            ' • Left ' + formatVisitPrice(Number(item.remainingVisits || 0) * Number(item.visitPrice || 0)) + '</span>'
+          : '';
+        return '<li><strong>' + item.type + ' • ' + item.site + '</strong><span class="tiny">' + new Date(item.time || item.submittedAt || Date.now()).toLocaleString() + ' • ' + (item.location || '--') + '</span>' + statusLine + projectLine + note + '</li>';
+      }).join('');
+    }
+    function loadClientVisitationSummary() {
+      const listNode = document.getElementById('clientVisitSummaryList');
+      const metaNode = document.getElementById('clientVisitSummaryMeta');
+      const chartsNode = document.getElementById('clientVisitSummaryCharts');
+      if (!listNode || !metaNode || !chartsNode) return;
+      const items = getUserVisitations();
+      const assignments = getUserAssignments();
+      const targets = getProjectTargets();
+      const projectStatsByClient = {};
+      const projectIds = new Set();
+
+      assignments.forEach((item) => {
+        const client = String(item.clientName || '').trim();
+        const project = String(item.projectName || item.destination || '').trim();
+        if (!client || !project) return;
+        projectIds.add(buildProjectId(client, project));
+      });
+
+      items.forEach((item) => {
+        const client = String(item.clientName || '').trim();
+        const project = String(item.projectName || '').trim();
+        if (!client || !project) return;
+        projectIds.add(buildProjectId(client, project));
+      });
+
+      projectIds.forEach((projectId) => {
+        const target = targets[projectId];
+        const fallbackEntries = items.filter((entry) => {
+          const client = String(entry.clientName || '').trim();
+          const project = String(entry.projectName || '').trim();
+          return buildProjectId(client, project) === projectId;
+        });
+
+        const clientName = String((target && target.clientName) || (fallbackEntries[0] && fallbackEntries[0].clientName) || 'Unknown Client').trim() || 'Unknown Client';
+        const fallbackRequired = fallbackEntries.reduce((max, entry) => {
+          return Math.max(max, Number(entry.requiredVisits || 0));
+        }, 0);
+        const fallbackCompleted = fallbackEntries.reduce((max, entry) => {
+          const required = Number(entry.requiredVisits || 0);
+          const remaining = Number(entry.remainingVisits || 0);
+          return Math.max(max, Math.max(0, required - remaining));
+        }, 0);
+        const fallbackFromCount = fallbackEntries.length;
+
+        const required = Math.max(0, Number((target && target.requiredVisits) || fallbackRequired || fallbackFromCount));
+        const completed = Math.max(0, Number((target && target.completedVisits) || fallbackCompleted || fallbackFromCount));
+        const left = Math.max(0, required - completed);
+
+        if (!projectStatsByClient[clientName]) {
+          projectStatsByClient[clientName] = {
+            projectCount: 0,
+            required: 0,
+            completed: 0,
+            left: 0,
+            visitationsSaved: 0
+          };
+        }
+
+        projectStatsByClient[clientName].projectCount += 1;
+        projectStatsByClient[clientName].required += required;
+        projectStatsByClient[clientName].completed += completed;
+        projectStatsByClient[clientName].left += left;
+      });
+
+      items.forEach((item) => {
+        const clientName = String(item.clientName || '').trim() || 'Unknown Client';
+        if (!projectStatsByClient[clientName]) {
+          projectStatsByClient[clientName] = {
+            projectCount: 0,
+            required: 0,
+            completed: 0,
+            left: 0,
+            visitationsSaved: 0
+          };
+        }
+        projectStatsByClient[clientName].visitationsSaved += 1;
+      });
+
+      const rows = Object.entries(projectStatsByClient)
+        .sort((a, b) => (b[1].visitationsSaved + b[1].completed) - (a[1].visitationsSaved + a[1].completed));
+
+      const totalProjects = rows.reduce((acc, [, row]) => acc + row.projectCount, 0);
+      const totalRequired = rows.reduce((acc, [, row]) => acc + row.required, 0);
+      const totalTargetCompleted = rows.reduce((acc, [, row]) => acc + row.completed, 0);
+      const totalTargetLeft = rows.reduce((acc, [, row]) => acc + row.left, 0);
+      const totalCompletionPct = totalRequired > 0 ? Math.round((totalTargetCompleted / totalRequired) * 100) : 0;
+
+      metaNode.textContent = rows.length + (rows.length === 1 ? ' client, ' : ' clients, ') + totalProjects + (totalProjects === 1 ? ' project - ' : ' projects - ') + totalTargetCompleted + ' of ' + totalRequired + ' visits completed (' + totalCompletionPct + '%, ' + totalTargetLeft + ' left)';
+      if (!rows.length) {
+        chartsNode.innerHTML = '<div class="pie-card"><div class="pie" style="background:conic-gradient(#334155 0deg, #334155 360deg);"></div><div class="pie-meta"><strong>0</strong><span class="tiny">No data yet</span></div></div>';
+        listNode.innerHTML = '<li><strong>No client visitations yet</strong><span class="tiny">Save visitations to see client totals.</span></li>';
+        return;
+      }
+
+      chartsNode.innerHTML = [
+        '<div class="pie-card"><div class="pie" style="background:conic-gradient(#38bdf8 0deg, #38bdf8 360deg);"></div><div class="pie-meta"><strong>' + rows.length + '</strong><span class="tiny">Clients</span></div></div>',
+        '<div class="pie-card"><div class="pie" style="background:conic-gradient(#22c55e 0deg, #22c55e ' + (totalCompletionPct * 3.6) + 'deg, #334155 ' + (totalCompletionPct * 3.6) + 'deg, #334155 360deg);"></div><div class="pie-meta"><strong>' + totalTargetCompleted + '</strong><span class="tiny">Visits Completed (' + totalCompletionPct + '%)</span></div></div>',
+        '<div class="pie-card"><div class="pie" style="background:conic-gradient(#f59e0b 0deg, #f59e0b ' + ((100 - totalCompletionPct) * 3.6) + 'deg, #334155 ' + ((100 - totalCompletionPct) * 3.6) + 'deg, #334155 360deg);"></div><div class="pie-meta"><strong>' + totalTargetLeft + '</strong><span class="tiny">Visits Remaining</span></div></div>'
+      ].join('');
+
+      listNode.innerHTML = rows.map(([clientName, row]) => {
+        const targetPct = row.required > 0 ? Math.round((row.completed / row.required) * 100) : 0;
+        const doneDeg = targetPct * 3.6;
+        const projectWord = row.projectCount === 1 ? 'project' : 'projects';
+        const logWord = row.visitationsSaved === 1 ? 'report' : 'reports';
+        return '<li><strong>' + clientName + '</strong>' +
+          '<div class="client-pie-main"><span class="tiny">' + row.completed + ' of ' + row.required + ' visits completed (' + targetPct + '%, ' + row.left + ' left) across ' + row.projectCount + ' ' + projectWord + '</span>' +
+          '<br><span class="tiny">You have personally logged ' + row.visitationsSaved + ' visit ' + logWord + '.</span></div>' +
+          '<div class="mini-pie" title="' + clientName + ' completion" style="background:conic-gradient(#22c55e 0deg, #22c55e ' + doneDeg + 'deg, #f59e0b ' + doneDeg + 'deg, #f59e0b 360deg);"></div></li>';
+      }).join('');
+    }
+    function loadMarketingVisitationHistory() {
+      const node = document.getElementById('marketingVisitationList');
+      if (!node) return;
+      const items = getUserMarketingVisitations().slice().sort((a, b) => new Date(b.time) - new Date(a.time));
+      if (!items.length) {
+        node.innerHTML = '<li><strong>No marketing visitations yet</strong><span class="tiny">Marketing visits will appear here.</span></li>';
+        return;
+      }
+      node.innerHTML = items.slice(0, 20).map((item) => {
+        const note = item.note ? '<br><span class="tiny">' + item.note + '</span>' : '';
+        const clientLine = item.clientName ? '<br><span class="tiny">Client: ' + item.clientName + '</span>' : '';
+        const phoneLine = item.phoneNumber ? '<br><span class="tiny">Phone: ' + item.phoneNumber + '</span>' : '';
+        return '<li><strong>' + (item.visitation || 'Marketing Visit') + '</strong>' +
+          '<span class="tiny">' + new Date(item.time).toLocaleString() + ' • ' + (item.location || '--') + '</span>' +
+          clientLine + phoneLine + note + '</li>';
+      }).join('');
+    }
+    function loadEmployeeRequests() {
+      const node = document.getElementById('requestList');
+      if (!node) return;
+      const items = getUserStaffRequests();
+      if (!items.length) {
+        node.innerHTML = '<li><strong>No requests yet</strong><span class="tiny">Send sick leave or shift switch to manager.</span></li>';
+        return;
+      }
+      node.innerHTML = items.slice(0, 12).map((item) => {
+        const typeLabel = item.type === 'late_notice' ? 'Late' : (item.type === 'shift_swap' ? 'Shift Switch' : 'Sick Leave');
+        const when = new Date(item.submittedAt || Date.now()).toLocaleString();
+        const status = String(item.status || 'pending').toLowerCase();
+        const statusColor = status === 'approved' ? '#86efac' : (status === 'rejected' ? '#fda4af' : '#fcd34d');
+        const shiftLine = (item.type === 'late_notice' || item.type === 'shift_swap')
+          ? '<br><span class="tiny">Expected arrival: ' + (item.requestedShift || '--') + (item.appliedShift ? ' | Applied: ' + item.appliedShift : '') + '</span>'
+          : '';
+        const reasonLine = item.reason ? '<br><span class="tiny">' + item.reason + '</span>' : '';
+        return '<li><strong>' + typeLabel + '</strong>' +
+          '<span class="tiny">' + when + ' | Date: ' + (item.requestedDate || '--') + '</span>' +
+          '<br><span class="tiny" style="color:' + statusColor + ';">Status: ' + status.charAt(0).toUpperCase() + status.slice(1) + '</span>' +
+          shiftLine + reasonLine + '</li>';
+      }).join('');
+    }
+    function updateUi() {
+      const s = getState();
+      applyEmployeeProfileUi();
+      document.getElementById('workedToday').textContent = fmtMs(workedMs());
+      document.getElementById('breakToday').textContent = fmtBreak(breakTotalMs());
+      const approvedShiftPlan = getLatestApprovedShiftPlan();
+      const onLeaveToday = isOnApprovedSickLeaveToday();
+      const onApprovedLate = isOnApprovedLateToday();
+      const baseShift = onLeaveToday
+        ? 'On Sick Leave'
+        : (onApprovedLate ? 'Late (Approved)' : (approvedShiftPlan ? 'Shift Plan: ' + approvedShiftPlan : (s.activeInAt ? 'On Duty' : 'Off Duty')));
+      document.getElementById('shiftStatus').textContent = baseShift;
+      document.getElementById('lastEvent').textContent = s.lastEvent || '--';
+      document.getElementById('locationText').textContent = s.lastLocation || '--';
+      const targetSummary = getEmployeeTargetSummary();
+      const targetNode = document.getElementById('targetProgress');
+      if (targetNode) targetNode.textContent = targetSummary.completed + '/' + targetSummary.required;
+      const revenue = getVisitationRevenueSummary();
+      const doneRevenueEl = document.getElementById('visitationDoneRevenue');
+      const leftRevenueEl = document.getElementById('visitationLeftRevenue');
+      if (doneRevenueEl) doneRevenueEl.textContent = String(Math.round(revenue.done));
+      if (leftRevenueEl) leftRevenueEl.textContent = String(Math.round(revenue.left));
+      const breakBtn = document.getElementById('breakBtn');
+      if (breakBtn) {
+        breakBtn.disabled = !s.activeInAt;
+        breakBtn.style.opacity = s.activeInAt ? '1' : '0.5';
+        breakBtn.textContent = s.breakActiveAt ? 'End Break' : 'Start Break';
+      }
+      loadAssignments();
+      loadActivity();
+      loadUpcomingVisitations();
+      loadLocationHistory();
+      loadVisitationHistory();
+      loadClientVisitationSummary();
+      loadEmployeeRequests();
+      loadMarketingVisitationHistory();
+      ensureProjectSelect();
+      populateExportWeekFilter();
+      renderEmployeeMap();
+    }
+
+    let exportWeekRanges = [];
+
+    function setExportStatus(message) {
+      const node = document.getElementById('exportStatus');
+      if (node) node.textContent = message;
+    }
+
+    function pushValidTimestamp(bucket, value) {
+      const ts = new Date(value || 0).getTime();
+      if (Number.isFinite(ts)) bucket.push(ts);
+    }
+
+    function startOfWeek(dateValue) {
+      const date = new Date(dateValue || Date.now());
+      date.setHours(0, 0, 0, 0);
+      const day = date.getDay();
+      const diffToMonday = (day + 6) % 7;
+      date.setDate(date.getDate() - diffToMonday);
+      return date;
+    }
+
+    function endOfWeek(startDate) {
+      const end = new Date(startDate.getTime());
+      end.setDate(end.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+      return end;
+    }
+
+    function collectExportTimestamps() {
+      const times = [];
+
+      Object.values(getProjectTargets()).forEach((item) => {
+        pushValidTimestamp(times, item && (item.updatedAt || item.nextVisitAt));
+      });
+
+      getAppointmentItems().forEach((item) => {
+        pushValidTimestamp(times, item && (item.createdAt || item.scheduledAt || item.checkedInAt));
+      });
+
+      const visitStore = getVisitStore();
+      Object.values(visitStore || {}).forEach((entries) => {
+        (Array.isArray(entries) ? entries : []).forEach((item) => pushValidTimestamp(times, item && item.time));
+      });
+
+      const marketingStore = getMarketingVisitStore();
+      Object.values(marketingStore || {}).forEach((entries) => {
+        (Array.isArray(entries) ? entries : []).forEach((item) => pushValidTimestamp(times, item && item.time));
+      });
+
+      const clockState = getState();
+      (Array.isArray(clockState.locationHistory) ? clockState.locationHistory : []).forEach((item) => {
+        pushValidTimestamp(times, item && item.time);
+      });
+
+      const assignmentStore = getAssignmentStore();
+      Object.values(assignmentStore || {}).forEach((entries) => {
+        (Array.isArray(entries) ? entries : []).forEach((item) => {
+          pushValidTimestamp(times, item && (item.updatedAt || item.assignedAt || item.arrivedAt));
+        });
+      });
+
+      return times;
+    }
+
+    function buildExportWeekRanges() {
+      const now = new Date();
+      const timestamps = collectExportTimestamps();
+      const earliest = timestamps.length ? new Date(Math.min.apply(null, timestamps)) : now;
+      const firstWeekStart = startOfWeek(earliest);
+      const ranges = [];
+
+      let cursor = new Date(firstWeekStart.getTime());
+      let weekIndex = 1;
+      while (cursor.getTime() <= now.getTime()) {
+        const weekStart = new Date(cursor.getTime());
+        const naturalEnd = endOfWeek(weekStart);
+        const weekEnd = naturalEnd.getTime() > now.getTime() ? new Date(now.getTime()) : naturalEnd;
+        ranges.push({
+          id: 'week-' + weekIndex,
+          label: 'Week ' + weekIndex + ' (' + weekStart.toLocaleDateString() + ' - ' + weekEnd.toLocaleDateString() + ')',
+          start: weekStart,
+          end: weekEnd
+        });
+        cursor.setDate(cursor.getDate() + 7);
+        weekIndex += 1;
+      }
+
+      return ranges.length ? ranges : [{
+        id: 'week-1',
+        label: 'Week 1 (' + now.toLocaleDateString() + ' - ' + now.toLocaleDateString() + ')',
+        start: startOfWeek(now),
+        end: now
+      }];
+    }
+
+    function populateExportWeekFilter() {
+      const select = document.getElementById('exportWeek');
+      if (!select) return;
+      const previousValue = select.value;
+      exportWeekRanges = buildExportWeekRanges();
+      select.innerHTML = exportWeekRanges.map((range) => '<option value="' + range.id + '">' + range.label + '</option>').join('');
+      const hasPrevious = exportWeekRanges.some((range) => range.id === previousValue);
+      if (hasPrevious) {
+        select.value = previousValue;
+      } else if (exportWeekRanges.length) {
+        select.value = exportWeekRanges[exportWeekRanges.length - 1].id;
+      }
+      updateExportWeekStatus();
+    }
+
+    function getSelectedExportWeekRange() {
+      const select = document.getElementById('exportWeek');
+      if (!select || !exportWeekRanges.length) return null;
+      return exportWeekRanges.find((range) => range.id === select.value) || exportWeekRanges[exportWeekRanges.length - 1] || null;
+    }
+
+    function updateExportWeekStatus() {
+      const selected = getSelectedExportWeekRange();
+      if (!selected) {
+        setExportStatus('No week range available.');
+        return;
+      }
+      setExportStatus('Selected ' + selected.label);
+    }
+
+    function inRange(value, range) {
+      if (!range || !range.start) return true;
+      const ts = new Date(value || 0).getTime();
+      if (!Number.isFinite(ts)) return false;
+      return ts >= range.start.getTime() && ts <= range.end.getTime();
+    }
+
+    function normalizeRows(rows, fallbackMessage) {
+      if (Array.isArray(rows) && rows.length) return rows;
+      return [{ info: fallbackMessage || 'No data in selected period' }];
+    }
+
+    function exportAllExcel() {
+      if (typeof XLSX === 'undefined' || !XLSX.utils) {
+        setExportStatus('Excel library not loaded. Refresh page and try again.');
+        return;
+      }
+
+      const range = getSelectedExportWeekRange();
+      if (!range) {
+        setExportStatus('No week selected.');
+        return;
+      }
+
+      const projectTargets = Object.values(getProjectTargets())
+        .filter((item) => inRange(item.updatedAt || item.nextVisitAt, range))
+        .map((item) => ({
+          id: item.id || '',
+          clientName: item.clientName || '',
+          projectName: item.projectName || '',
+          requiredVisits: Number(item.requiredVisits || 0),
+          completedVisits: Number(item.completedVisits || 0),
+          assignedEngineer: item.assignedEngineer || '',
+          assignedEngineers: Array.isArray(item.assignedEngineers) ? item.assignedEngineers.join(', ') : '',
+          nextVisitAt: item.nextVisitAt || '',
+          visitPrice: Number(item.visitPrice || 0),
+          updatedAt: item.updatedAt || ''
+        }));
+
+      const appointments = getAppointmentItems()
+        .filter((item) => inRange(item.createdAt || item.scheduledAt || item.checkedInAt, range))
+        .map((item) => ({
+          id: item.id || '',
+          engineer: item.engineer || '',
+          projectId: item.projectId || '',
+          clientName: item.clientName || '',
+          projectName: item.projectName || '',
+          visitNumber: Number(item.visitNumber || 0),
+          visitPrice: Number(item.visitPrice || 0),
+          site: item.site || '',
+          type: item.type || '',
+          note: item.note || '',
+          scheduledAt: item.scheduledAt || '',
+          checkedInAt: item.checkedInAt || '',
+          createdAt: item.createdAt || ''
+        }));
+
+      const visitStore = getVisitStore();
+      const visitations = Object.entries(visitStore)
+        .flatMap(([employee, entries]) => (Array.isArray(entries) ? entries.map((item) => ({ ...item, employee })) : []))
+        .filter((item) => inRange(item.time, range))
+        .map((item) => ({
+          employee: item.employee || '',
+          id: item.id || '',
+          projectId: item.projectId || '',
+          clientName: item.clientName || '',
+          projectName: item.projectName || '',
+          visitNumber: Number(item.visitNumber || 0),
+          type: item.type || '',
+          site: item.site || '',
+          note: item.note || '',
+          location: item.location || '',
+          requiredVisits: Number(item.requiredVisits || 0),
+          remainingVisits: Number(item.remainingVisits || 0),
+          visitPrice: Number(item.visitPrice || 0),
+          time: item.time || ''
+        }));
+
+      const marketingStore = getMarketingVisitStore();
+      const marketingVisitations = Object.entries(marketingStore)
+        .flatMap(([employee, entries]) => (Array.isArray(entries) ? entries.map((item) => ({ ...item, employee })) : []))
+        .filter((item) => inRange(item.time, range))
+        .map((item) => ({
+          employee: item.employee || '',
+          id: item.id || '',
+          visitation: item.visitation || '',
+          clientName: item.clientName || '',
+          phoneNumber: item.phoneNumber || '',
+          note: item.note || '',
+          location: item.location || '',
+          time: item.time || ''
+        }));
+
+      const clockState = getState();
+      const gpsHistory = (Array.isArray(clockState.locationHistory) ? clockState.locationHistory : [])
+        .filter((item) => inRange(item.time, range))
+        .map((item) => ({
+          coords: item.coords || '',
+          time: item.time || ''
+        }));
+
+      const assignmentStore = getAssignmentStore();
+      const assignments = Object.entries(assignmentStore)
+        .flatMap(([employee, entries]) => (Array.isArray(entries) ? entries.map((item) => ({ ...item, employee })) : []))
+        .filter((item) => inRange(item.updatedAt || item.assignedAt || item.arrivedAt, range))
+        .map((item) => ({
+          employee: item.employee || '',
+          id: item.id || '',
+          clientName: item.clientName || '',
+          projectName: item.projectName || '',
+          destination: item.destination || '',
+          visitType: item.visitType || '',
+          requiredVisits: Number(item.requiredVisits || 0),
+          visitPrice: Number(item.visitPrice || 0),
+          progressStatus: item.progressStatus || '',
+          assignedAt: item.assignedAt || '',
+          updatedAt: item.updatedAt || '',
+          arrivedAt: item.arrivedAt || ''
+        }));
+
+      const workbook = XLSX.utils.book_new();
+      const sheetDefs = [
+        { name: 'ProjectTargets', rows: normalizeRows(projectTargets, 'No project targets in selected period') },
+        { name: 'Appointments', rows: normalizeRows(appointments, 'No appointments in selected period') },
+        { name: 'Visitations', rows: normalizeRows(visitations, 'No visitations in selected period') },
+        { name: 'MarketingVisits', rows: normalizeRows(marketingVisitations, 'No marketing visits in selected period') },
+        { name: 'GPSHistory', rows: normalizeRows(gpsHistory, 'No GPS history in selected period') },
+        { name: 'Assignments', rows: normalizeRows(assignments, 'No assignments in selected period') }
+      ];
+
+      sheetDefs.forEach((sheetDef) => {
+        const ws = XLSX.utils.json_to_sheet(sheetDef.rows);
+        XLSX.utils.book_append_sheet(workbook, ws, sheetDef.name);
+      });
+
+      const stamp = new Date().toISOString().replace(/[:]/g, '-').replace(/\..+/, '');
+      const fileName = 'fieldtrack-export-' + range.id + '-' + stamp + '.xlsx';
+      XLSX.writeFile(workbook, fileName);
+      setExportStatus('Exported ' + fileName + ' for ' + range.label + ' with ' + sheetDefs.length + ' sheets.');
+    }
+    function addActivity(type) {
+      const s = getState();
+      const arr = Array.isArray(s.activity) ? s.activity : [];
+      arr.unshift({ type, time: new Date().toISOString() });
+      s.activity = arr.slice(0, 50);
+      setState(s);
+    }
+    async function reverseGeocodeStreet(lat, lng) {
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 6000);
+        const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=17`, { signal: controller.signal, headers: { Accept: 'application/json' } });
+        clearTimeout(timer);
+        if (!response.ok) return 'Street unavailable';
+        const data = await response.json();
+        const addr = data && data.address ? data.address : {};
+        const road = addr.road || addr.pedestrian || addr.neighbourhood || '';
+        const place = addr.suburb || addr.city || addr.town || addr.village || '';
+        const label = [road, place].filter(Boolean).join(', ');
+        return label || data.display_name || 'Street unavailable';
+      } catch (err) {
+        return 'Street unavailable';
+      }
+    }
+    async function refreshLocation() {
+      if (!navigator.geolocation) {
+        setStatus('Location not supported on this device', 'err');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const s = getState();
+        s.lastLocation = pos.coords.latitude.toFixed(5) + ', ' + pos.coords.longitude.toFixed(5);
+        s.locationHistory = Array.isArray(s.locationHistory) ? s.locationHistory : [];
+        const entry = {
+          employee: currentUser(),
+          coords: s.lastLocation,
+          street: 'Looking up street...',
+          time: new Date().toISOString()
+        };
+        s.locationHistory.unshift(entry);
+        s.locationHistory = s.locationHistory.slice(0, 50);
+        setState(s);
+        setStatus('Location updated', 'ok');
+        updateUi();
+        reverseGeocodeStreet(pos.coords.latitude, pos.coords.longitude).then((street) => {
+          const latestState = getState();
+          const list = Array.isArray(latestState.locationHistory) ? latestState.locationHistory : [];
+          const match = list.find((item) => item.time === entry.time && item.coords === entry.coords);
+          if (match) match.street = street;
+          setState(latestState);
+          updateUi();
+        });
+      }, () => {
+        setStatus('Location permission denied', 'warn');
+      }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    }
+    window.clockAction = async function(action) {
+      const s = getState();
+      if (action === 'in') {
+        const ok = window.confirm('Fingerprint check required. Tap OK after fingerprint.');
+        if (!ok) { setStatus('Clock-in cancelled', 'warn'); return; }
+        s.activeInAt = new Date().toISOString();
+        s.sessionBreakMs = 0;
+        s.breakActiveAt = null;
+        s.lastEvent = 'Clocked in at ' + new Date().toLocaleTimeString();
+        setState(s);
+
+        addActivity('Clock In');
+        setStatus('Clocked in successfully', 'ok');
+        refreshLocation();
+      } else {
+        if (s.activeInAt) {
+          if (s.breakActiveAt) {
+            const breakElapsed = Math.max(0, Date.now() - new Date(s.breakActiveAt).getTime());
+            s.sessionBreakMs = Number(s.sessionBreakMs || 0) + breakElapsed;
+            s.breakTotalMs = Number(s.breakTotalMs || 0) + breakElapsed;
+            s.breakActiveAt = null;
+          }
+          const sessionElapsed = Math.max(0, Date.now() - new Date(s.activeInAt).getTime());
+          const netWorked = Math.max(0, sessionElapsed - Number(s.sessionBreakMs || 0));
+          s.totalMs = Number(s.totalMs || 0) + netWorked;
+          s.activeInAt = null;
+          s.sessionBreakMs = 0;
+        }
+        s.lastEvent = 'Clocked out at ' + new Date().toLocaleTimeString();
+        setState(s);
+        addActivity('Clock Out');
+        setStatus('Clocked out successfully', 'ok');
+      }
+      updateUi();
+    };
+    window.toggleBreak = function() {
+      const s = getState();
+      if (!s.activeInAt) {
+        setStatus('Clock in first to start break', 'warn');
+        return;
+      }
+      if (!s.breakActiveAt) {
+        s.breakActiveAt = new Date().toISOString();
+        s.lastEvent = 'Break started at ' + new Date().toLocaleTimeString();
+        setState(s);
+        addActivity('Break Start');
+        setStatus('Break started', 'ok');
+      } else {
+        const breakElapsed = Math.max(0, Date.now() - new Date(s.breakActiveAt).getTime());
+        s.sessionBreakMs = Number(s.sessionBreakMs || 0) + breakElapsed;
+        s.breakTotalMs = Number(s.breakTotalMs || 0) + breakElapsed;
+        s.breakActiveAt = null;
+        s.lastEvent = 'Break ended at ' + new Date().toLocaleTimeString();
+        setState(s);
+        addActivity('Break End');
+        setStatus('Break ended', 'ok');
+      }
+      updateUi();
+    };
+    window.markAssignmentArrived = function(assignmentId, options) {
+      const list = getUserAssignments();
+      const index = list.findIndex((item) => String(item.id) === String(assignmentId));
+      if (index < 0) {
+        setStatus('Assignment not found.', 'warn');
+        return;
+      }
+      const assignment = list[index];
+      const coords = getAssignmentCoordinates(assignment);
+      if (!coords) {
+        setStatus('Access denied: project location is missing.', 'err');
+        return;
+      }
+      if (!navigator.geolocation) {
+        setStatus('Access denied: GPS not supported.', 'err');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition((pos) => {
+        const dist = distanceMeters(pos.coords.latitude, pos.coords.longitude, coords.lat, coords.lng);
+        if (dist > ARRIVAL_RADIUS_METERS) {
+          setStatus('Access denied: you are ' + Math.round(dist) + 'm away (max ' + ARRIVAL_RADIUS_METERS + 'm).', 'err');
+          return;
+        }
+        const skipConfirm = Boolean(options && options.skipConfirm);
+        if (!skipConfirm) {
+          const fingerprintOk = window.confirm('Fingerprint check required from phone ID. Tap OK after fingerprint verification.');
+          if (!fingerprintOk) {
+            setStatus('Access denied: fingerprint not verified.', 'err');
+            return;
+          }
+        }
+        list[index] = {
+          ...assignment,
+          progressStatus: 'Progress',
+          arrivedAt: new Date().toISOString(),
+          arrivedDistanceMeters: Math.round(dist),
+          arrivedCoords: {
+            lat: Number(pos.coords.latitude.toFixed(6)),
+            lng: Number(pos.coords.longitude.toFixed(6))
+          },
+          updatedAt: new Date().toISOString()
+        };
+        saveUserAssignments(list);
+        prefillVisitationFromAssignment(list[index]);
+        addActivity('Arrived: ' + (assignment.projectName || assignment.destination || 'Project'));
+        setStatus('Arrived verified. You can now save visitation.', 'ok');
+        setVisitStatus('Project info loaded from assignment.');
+        updateUi();
+      }, () => {
+        setStatus('Access denied: unable to read your location.', 'err');
+      }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    };
+    window.addEventListener('storage', (e) => {
+      if (e.key === ASSIGN_KEY || e.key === VISIT_KEY || e.key === VISIT_APPROVAL_KEY || e.key === STAFF_REQUEST_KEY || e.key === MARKETING_VISIT_KEY || e.key === CLOCK_KEY || e.key === APPOINTMENT_KEY || e.key === EMPLOYEE_PROFILE_KEY) updateUi();
+    });
+    window.submitEmployeeRequest = function() {
+      const typeEl = document.getElementById('requestType');
+      const dateEl = document.getElementById('requestDate');
+      const shiftEl = document.getElementById('requestShift');
+      const reasonEl = document.getElementById('requestReason');
+      const type = String(typeEl && typeEl.value || 'sick_leave').trim().toLowerCase();
+      const requestedDate = String(dateEl && dateEl.value || '').trim();
+      const requestedShift = String(shiftEl && shiftEl.value || '').trim();
+      const reason = String(reasonEl && reasonEl.value || '').trim();
+
+      if (!requestedDate) {
+        setRequestStatus('Choose request date first.');
+        return;
+      }
+      if (type === 'late_notice' && !requestedShift) {
+        setRequestStatus('Enter expected arrival time for late request.');
+        return;
+      }
+      if (!reason) {
+        setRequestStatus('Add reason before sending request.');
+        return;
+      }
+
+      const requests = getStaffRequests();
+      requests.unshift({
+        id: 'req-' + Date.now(),
+        employee: currentUser(),
+        type,
+        requestedDate,
+        requestedShift: type === 'late_notice' ? requestedShift : '',
+        reason,
+        status: 'pending',
+        submittedAt: new Date().toISOString()
+      });
+      saveStaffRequests(requests.slice(0, 300));
+      if (reasonEl) reasonEl.value = '';
+      if (shiftEl) shiftEl.value = '';
+      setRequestStatus('Request sent to manager approval center.');
+      addActivity(type === 'late_notice' ? 'Late Request' : 'Sick Leave Request');
+      updateUi();
+    };
+    window.addVisitation = function() {
+      const profile = getEmployeeProfile();
+      if (!profile.allowVisitation) {
+        setVisitStatus('Your setup (' + profile.type + ') cannot create visitation.');
+        return;
+      }
+      const siteEl = document.getElementById('visitSite');
+      const noteEl = document.getElementById('visitNote');
+      const typeEl = document.getElementById('visitType');
+      const clientEl = document.getElementById('visitClient');
+      const projectEl = document.getElementById('visitProjectName');
+      const requiredEl = document.getElementById('visitRequiredCount');
+      const projectSelectEl = document.getElementById('visitProjectTarget');
+      const targetPriceEl = document.getElementById('visitProjectPrice');
+      const site = (siteEl && siteEl.value ? siteEl.value.trim() : '');
+      const note = (noteEl && noteEl.value ? noteEl.value.trim() : '');
+      const type = (typeEl && typeEl.value ? typeEl.value : 'Site Check');
+      const clientName = (clientEl && clientEl.value ? clientEl.value.trim() : '');
+      const projectName = (projectEl && projectEl.value ? projectEl.value.trim() : '');
+      const requiredVisitsRaw = requiredEl && requiredEl.value ? Number(requiredEl.value) : 1;
+      const requiredVisits = Number.isFinite(requiredVisitsRaw) && requiredVisitsRaw > 0 ? Math.floor(requiredVisitsRaw) : 1;
+      const priceRaw = targetPriceEl && targetPriceEl.value ? Number(targetPriceEl.value) : 0;
+      const visitPrice = Number.isFinite(priceRaw) && priceRaw >= 0 ? priceRaw : 0;
+      if (!site) {
+        setVisitStatus('Enter site/client name first.');
+        return;
+      }
+      if (!clientName || !projectName) {
+        setVisitStatus('Add client and project name before saving visitation.');
+        return;
+      }
+
+      const targets = getProjectTargets();
+      let projectId = projectSelectEl && projectSelectEl.value ? projectSelectEl.value : '';
+      const isNewProjectRequest = !projectId;
+      if (isNewProjectRequest) {
+        projectId = buildProjectId(clientName, projectName);
+        if (targets[projectId]) {
+          setVisitStatus('This project already exists. Select it from the project dropdown instead.');
+          return;
+        }
+      }
+
+      const now = new Date();
+      const appointmentItems = getAppointmentItems();
+      const projectAppointments = appointmentItems
+        .filter((item) => String(item.engineer || '').toLowerCase() === currentUser())
+        .filter((item) => String(item.projectId || '') === String(projectId || ''))
+        .filter((item) => !item.checkedInAt)
+        .sort((a, b) => new Date(a.scheduledAt || 0).getTime() - new Date(b.scheduledAt || 0).getTime());
+      const nextScheduled = isNewProjectRequest ? null : (projectAppointments[0] || null);
+      if (nextScheduled) {
+        const scheduledAt = new Date(nextScheduled.scheduledAt || 0);
+        if (!isNaN(scheduledAt.getTime()) && now.getTime() < scheduledAt.getTime()) {
+          setVisitStatus('Too early. Scheduled for ' + scheduledAt.toLocaleString());
+          return;
+        }
+      }
+
+      const existing = targets[projectId];
+      if (!isNewProjectRequest && !existing) {
+        setVisitStatus('Selected project target is not found. Tap Arrived again.');
+        return;
+      }
+      const currentCompleted = existing ? Number(existing.completedVisits || 0) : 0;
+      const nextRequired = existing ? Number(existing.requiredVisits || requiredVisits) : requiredVisits;
+      const nextVisitPrice = existing ? Number(existing.visitPrice || visitPrice) : visitPrice;
+      const currentRemaining = Math.max(0, nextRequired - currentCompleted);
+      if (existing && currentRemaining <= 0) {
+        setVisitStatus('This project is complete (0 remaining). Ask manager to increase required visits.');
+        return;
+      }
+      const s = getState();
+      const approvals = getVisitationApprovals();
+      if (nextScheduled && approvals.some((item) => item.status === 'pending' && item.appointmentId === nextScheduled.id)) {
+        setVisitStatus('This scheduled visitation is already pending manager approval.');
+        return;
+      }
+      approvals.unshift({
+        id: 'visit-pending-' + Date.now(),
+        status: 'pending',
+        employee: currentUser(),
+        submittedAt: new Date().toISOString(),
+        appointmentId: nextScheduled && nextScheduled.id ? nextScheduled.id : '',
+        visitNumber: nextScheduled && nextScheduled.visitNumber ? nextScheduled.visitNumber : undefined,
+        isNewProjectRequest,
+        projectId,
+        clientName,
+        projectName,
+        requiredVisits: nextRequired,
+        remainingVisits: Math.max(0, nextRequired - (currentCompleted + 1)),
+        visitPrice: nextVisitPrice,
+        type,
+        site,
+        note,
+        location: s.lastLocation || '--',
+        time: new Date().toISOString()
+      });
+      saveVisitationApprovals(approvals.slice(0, 200));
+
+      addActivity('Visitation: ' + type);
+      if (siteEl) siteEl.value = '';
+      if (noteEl) noteEl.value = '';
+      if (targetPriceEl) targetPriceEl.value = String(nextVisitPrice);
+      setVisitStatus(isNewProjectRequest
+        ? 'New project submitted to manager for approval. It will be created once approved.'
+        : 'Submitted to manager for approval. Waiting approval to count this visitation.');
+      updateUi();
+    };
+    window.addMarketingVisitation = function() {
+      const profile = getEmployeeProfile();
+      if (!profile.allowMarketing) {
+        setMarketingVisitStatus('Your setup (' + profile.type + ') cannot create marketing visitation.');
+        return;
+      }
+      const visitationEl = document.getElementById('marketingVisitation');
+      const clientNameEl = document.getElementById('marketingClientName');
+      const clientPhoneEl = document.getElementById('marketingClientPhone');
+      const noteEl = document.getElementById('marketingNote');
+      const visitation = visitationEl && visitationEl.value ? visitationEl.value.trim() : '';
+      const clientName = clientNameEl && clientNameEl.value ? clientNameEl.value.trim() : '';
+      const phoneNumber = clientPhoneEl && clientPhoneEl.value ? clientPhoneEl.value.trim() : '';
+      const note = noteEl && noteEl.value ? noteEl.value.trim() : '';
+      if (!visitation) {
+        setMarketingVisitStatus('Add marketing visitation first.');
+        return;
+      }
+      if (!clientName) {
+        setMarketingVisitStatus('Add client name first.');
+        return;
+      }
+      if (!phoneNumber) {
+        setMarketingVisitStatus('Add phone number first.');
+        return;
+      }
+      const s = getState();
+      const items = getUserMarketingVisitations();
+      items.unshift({
+        id: 'mvisit-' + Date.now(),
+        visitation,
+        clientName,
+        phoneNumber,
+        note,
+        location: s.lastLocation || '--',
+        time: new Date().toISOString()
+      });
+      saveUserMarketingVisitations(items.slice(0, 100));
+      addActivity('Marketing Visitation');
+      if (visitationEl) visitationEl.value = '';
+      if (clientNameEl) clientNameEl.value = '';
+      if (clientPhoneEl) clientPhoneEl.value = '';
+      if (noteEl) noteEl.value = '';
+      setMarketingVisitStatus('Marketing visitation saved at ' + new Date().toLocaleTimeString());
+      updateUi();
+    };
+    const projectSelectEl = document.getElementById('visitProjectTarget');
+    if (projectSelectEl) {
+      projectSelectEl.addEventListener('change', applyTargetToForm);
+      projectSelectEl.addEventListener('change', checkNoProjectSuggestion);
+    }
+    window.updateExportWeekStatus = updateExportWeekStatus;
+    window.exportAllExcel = exportAllExcel;
+    function checkNoProjectSuggestion() {
+      const clientEl = document.getElementById('visitClient');
+      const selectEl = document.getElementById('visitProjectTarget');
+      const hintEl = document.getElementById('visitNoProjectHint');
+      if (!hintEl) return;
+      const clientName = clientEl && clientEl.value ? clientEl.value.trim().toLowerCase() : '';
+      const hasProjectSelected = Boolean(selectEl && selectEl.value);
+      const hasMatchingProject = clientName
+        ? Object.values(getProjectTargets()).some((target) => String(target.clientName || '').trim().toLowerCase() === clientName)
+        : false;
+      hintEl.style.display = (clientName && !hasProjectSelected && !hasMatchingProject) ? '' : 'none';
+    }
+    function suggestMarketingVisitation() {
+      const clientEl = document.getElementById('visitClient');
+      const marketingClientEl = document.getElementById('marketingClientName');
+      const marketingCard = document.getElementById('marketingVisitationCard');
+      if (marketingClientEl && clientEl) marketingClientEl.value = clientEl.value.trim();
+      if (marketingCard) marketingCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const marketingInput = document.getElementById('marketingVisitation');
+      if (marketingInput) marketingInput.focus();
+      setMarketingVisitStatus('Prefilled from client without an active project.');
+    }
+    setInterval(updateUi, 30000);
+    updateUi();
+    startLiveEmployeeTracking();
+  </script>
+</body>
+</html>

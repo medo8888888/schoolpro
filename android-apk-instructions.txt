@@ -1,0 +1,5 @@
+1. Open the project in Android Studio.
+2. Select the android folder as the Android project.
+3. Let Gradle sync finish.
+4. Choose Build > Build Bundle(s) / APK(s) > Build APK.
+5. The APK will be generated under android/app/build/outputs/apk/debug/app-debug.apk.

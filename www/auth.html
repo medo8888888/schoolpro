@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login and Sign Up</title>
+  <style>
+    :root { --bg:#071220; --panel:#0f213a; --panel2:#142f4c; --line:#21486f; --text:#f5f8fc; --muted:#8da2ba; --accent:#d6a63c; --ok:#2dd4bf; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:Inter,Arial,sans-serif; background:linear-gradient(135deg,#071220 0%,#0d1f34 100%); color:var(--text); display:grid; place-items:center; padding:20px; }
+    .card { width:min(760px,100%); background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:18px; }
+    h1 { margin:0 0 8px; font-size:26px; }
+    p { margin:0 0 14px; color:var(--muted); }
+    .auth-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .panel { background:var(--panel2); border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .panel h2 { margin:0 0 8px; font-size:18px; }
+    label { display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    input, select { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#fff; color:#111; }
+    button.submit { margin-top:14px; width:100%; border:none; border-radius:10px; padding:11px 12px; background:var(--accent); color:#071220; font-weight:800; cursor:pointer; }
+    .hint { margin-top:10px; font-size:12px; color:var(--muted); }
+    .message { margin:10px 0; min-height:18px; color:var(--ok); font-size:12px; }
+    @media (max-width:760px) {
+      .auth-grid { grid-template-columns:1fr; }
+    }
+  </style>
+  <script src="auth.js"></script>
+  <script>
+    if (window.__FIELDTRACK_AUTH) {
+      window.__FIELDTRACK_AUTH.guardPage();
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.__FIELDTRACK_AUTH) {
+        window.__FIELDTRACK_AUTH.bindAuthPage();
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h1>Login and Sign Up</h1>
+    <p>Create your account and start immediately.</p>
+    <div id="authMessage" class="message"></div>
+
+    <div class="auth-grid">
+      <section class="panel">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <label for="loginUsername">Email</label>
+          <input id="loginUsername" type="email" placeholder="owner@company.com" required />
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Your password" required />
+          <button class="submit" type="submit">Login</button>
+          <div id="loginInfo" class="hint"></div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Sign Up</h2>
+        <form id="registerForm">
+          <label for="registerName">Full Name</label>
+          <input id="registerName" type="text" placeholder="Ahmed Ali" />
+          <label for="registerUsername">Username</label>
+          <input id="registerUsername" type="text" placeholder="ahmed" />
+          <label for="registerOrg">Organization Name</label>
+          <input id="registerOrg" type="text" placeholder="My Company" />
+          <label for="registerRole">Account Type</label>
+          <select id="registerRole">
+            <option value="employee">Employee</option>
+            <option value="manager">Manager</option>
+            <option value="owner" selected>Owner</option>
+            <option value="accountant">Accountant</option>
+          </select>
+          <div id="employeeTypeField" style="display:none;">
+            <label for="registerEmployeeType">Employee Department / Type</label>
+            <select id="registerEmployeeType">
+              <option value="asbuilt">Asbuilt</option>
+              <option value="sales">Sales</option>
+              <option value="supervision">Supervision</option>
+              <option value="engineer">Engineer</option>
+            </select>
+          </div>
+          <label for="registerEmail">Email</label>
+          <input id="registerEmail" type="email" placeholder="owner@company.com" required />
+          <label for="registerPassword">Password</label>
+          <input id="registerPassword" type="password" placeholder="Minimum 6+ characters" required />
+          <button class="submit" type="submit">Create Account</button>
+          <div id="registerInfo" class="hint"></div>
+        </form>
+      </section>
+    </div>
+  </div>
+</body>
+</html>

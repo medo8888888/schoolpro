@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Approvals</title>
+  <style>
+    :root { --bg:#071220; --panel:#0f213a; --panel2:#142f4c; --line:#21486f; --text:#f5f8fc; --muted:#8da2ba; --accent:#d6a63c; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:Inter,Arial,sans-serif; background:linear-gradient(135deg,#071220 0%,#0d1f34 100%); color:var(--text); display:grid; place-items:center; padding:20px; }
+    .card { width:min(760px,100%); background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:18px; }
+    h1 { margin:0 0 8px; font-size:26px; }
+    p { margin:0 0 14px; color:var(--muted); }
+    .top { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+    .link { text-decoration:none; border-radius:10px; padding:9px 12px; background:var(--panel2); color:var(--text); border:1px solid var(--line); font-weight:700; }
+    .list { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+    .list li { background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:10px; }
+    .status { margin-top:10px; color:var(--muted); font-size:12px; min-height:16px; }
+  </style>
+  <script src="auth.js"></script>
+  <script>
+    if (window.__FIELDTRACK_AUTH) {
+      window.__FIELDTRACK_AUTH.guardPage();
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.__FIELDTRACK_AUTH) {
+        window.__FIELDTRACK_AUTH.bindAuthPage();
+      }
+      var logoutBtn = document.getElementById('logoutBtn');
+      if (!logoutBtn || !window.__FIELDTRACK_AUTH) return;
+      logoutBtn.addEventListener('click', function () {
+        window.__FIELDTRACK_AUTH.clearSession();
+        sessionStorage.setItem('FIELDTRACK_AUTH_MESSAGE', 'Logged out successfully.');
+        window.location.replace('auth.html');
+      });
+    });
+  </script>
+</head>
+<body>
+  <div class="card">
+    <h1>Pending Signups</h1>
+    <p>Approve or reject new owner signups.</p>
+    <div class="top">
+      <a class="link" href="index.html">Home</a>
+      <button class="link" id="logoutBtn" type="button">Logout</button>
+    </div>
+    <ul class="list" id="pendingUsersList"></ul>
+    <div class="status" id="pendingStatus">Loading...</div>
+  </div>
+</body>
+</html>
