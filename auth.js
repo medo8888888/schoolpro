@@ -7,9 +7,7 @@
     : '';
   const defaultBackendBase = nativePlatform === 'android'
     ? 'http://10.0.2.2:4000'
-    : nativePlatform === 'ios'
-      ? 'http://localhost:4000'
-      : 'http://localhost:4000';
+    : 'http://localhost:4000';
   const BACKEND_BASE = String(window.FIELDTRACK_API_BASE || defaultBackendBase).replace(/\/$/, '');
   window.__FIELDTRACK_API_BASE = BACKEND_BASE;
 
