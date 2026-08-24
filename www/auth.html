@@ -43,19 +43,6 @@
 
     <div class="auth-grid">
       <section class="panel">
-        <h2>Login</h2>
-        <form id="loginForm">
-          <label for="loginUsername">Email</label>
-          <input id="loginUsername" type="email" placeholder="owner@company.com" required />
-          <label for="loginPassword">Password</label>
-          <input id="loginPassword" type="password" placeholder="Your password" required />
-          <button class="submit" type="submit">Login</button>
-          <button type="button" id="biometricLoginBtn" class="submit" style="display:none; margin-top:8px; background:#2a5;">Login with Fingerprint</button>
-          <div id="loginInfo" class="hint"></div>
-        </form>
-      </section>
-
-      <section class="panel">
         <h2>Sign Up</h2>
         <form id="registerForm">
           <label for="registerName">Full Name</label>
@@ -86,6 +73,19 @@
           <input id="registerPassword" type="password" placeholder="Minimum 6+ characters" required />
           <button class="submit" type="submit">Create Account</button>
           <div id="registerInfo" class="hint"></div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Login</h2>
+        <form id="loginForm">
+          <label for="loginUsername">Email</label>
+          <input id="loginUsername" type="email" placeholder="owner@company.com" required />
+          <label for="loginPassword">Password</label>
+          <input id="loginPassword" type="password" placeholder="Your password" required />
+          <button class="submit" type="submit">Login</button>
+          <button type="button" id="biometricLoginBtn" class="submit" style="display:none; margin-top:8px; background:#2a5;">Login with Fingerprint</button>
+          <div id="loginInfo" class="hint"></div>
         </form>
       </section>
     </div>
