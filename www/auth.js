@@ -6,7 +6,7 @@
     ? window.Capacitor.getPlatform()
     : '';
   const defaultBackendBase = nativePlatform === 'android'
-    ? 'http://10.0.2.2:4000'
+    ? 'http://172.17.198.39:4000'
     : nativePlatform === 'ios'
       ? 'http://localhost:4000'
       : 'http://localhost:4000';
@@ -77,6 +77,53 @@
       throw new Error(payload.message || 'Unable to reach backend.');
     }
     return payload;
+  }
+
+  const BIOMETRIC_SERVER = 'com.Alkashaf.app';
+
+  function getBiometricPlugin() {
+    return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.NativeBiometric) || null;
+  }
+
+  async function isBiometricLoginAvailable() {
+    const plugin = getBiometricPlugin();
+    if (!plugin || nativePlatform !== 'android') return false;
+    try {
+      const available = await plugin.isAvailable();
+      if (!available.isAvailable) return false;
+      const saved = await plugin.isCredentialsSaved({ server: BIOMETRIC_SERVER });
+      return !!saved.isSaved;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  async function saveBiometricCredentials(username, password) {
+    const plugin = getBiometricPlugin();
+    if (!plugin || nativePlatform !== 'android') return;
+    try {
+      const available = await plugin.isAvailable();
+      if (!available.isAvailable) return;
+      await plugin.setCredentials({
+        username,
+        password,
+        server: BIOMETRIC_SERVER,
+        accessControl: 2
+      });
+    } catch (error) {
+      /* Ignore silently: biometric enrollment is optional, never block login. */
+    }
+  }
+
+  async function loginWithBiometrics() {
+    const plugin = getBiometricPlugin();
+    if (!plugin) throw new Error('Fingerprint login is not available on this device.');
+    const credentials = await plugin.getSecureCredentials({
+      server: BIOMETRIC_SERVER,
+      reason: 'Log in to your account',
+      title: 'Fingerprint Login'
+    });
+    return loginWithBackend(credentials.username, credentials.password);
   }
 
   async function registerWithBackend(name, username, email, password, organizationName, role, employeeType) {
@@ -176,6 +223,38 @@
     }
 
     if (currentPage === 'auth.html' && loginForm) {
+      const biometricBtn = document.getElementById('biometricLoginBtn');
+
+      if (biometricBtn) {
+        isBiometricLoginAvailable().then((available) => {
+          if (available) biometricBtn.style.display = 'block';
+        });
+
+        biometricBtn.addEventListener('click', function () {
+          if (infoNode) infoNode.textContent = 'Verifying fingerprint...';
+          loginWithBiometrics()
+            .then((payload) => {
+              const profile = normalizeUser(payload, '');
+              localStorage.setItem(TOKEN_KEY, payload.token || '');
+              setSession({
+                token: payload.token || '',
+                email: profile.email,
+                username: profile.username || profile.email,
+                displayName: profile.displayName,
+                role: profile.role,
+                userId: profile.id,
+                organizationId: profile.organizationId,
+                loginAt: new Date().toISOString()
+              });
+              setMessage('Login successful.');
+              window.location.replace('index.html');
+            })
+            .catch((error) => {
+              if (infoNode) infoNode.textContent = error.message || 'Fingerprint login failed.';
+            });
+        });
+      }
+
       loginForm.addEventListener('submit', function (event) {
         event.preventDefault();
 
@@ -201,6 +280,7 @@
           if (profile.username && profile.role === 'employee' && profile.employeeType) {
             saveEmployeeType(profile.username, profile.employeeType);
           }
+          saveBiometricCredentials(identifier, password);
           setMessage('Login successful.');
           window.location.replace('index.html');
         })
