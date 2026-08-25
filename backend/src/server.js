@@ -8,6 +8,7 @@ const authRoutes = require('./modules/auth/auth.routes');
 const attendanceRoutes = require('./modules/attendance/attendance.routes');
 const peopleRoutes = require('./modules/people/people.routes');
 const groupsRoutes = require('./modules/groups/groups.routes');
+const reportsRoutes = require('./modules/reports/reports.routes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -51,6 +52,7 @@ app.get('/health', (req, res) => res.json({ ok: true, system: 'jibble-style-back
 
 app.use('/auth', authRoutes);
 app.use('/people', authMiddleware, peopleRoutes);
+app.use('/employees', authMiddleware, peopleRoutes);
 app.use('/groups', authMiddleware, groupsRoutes);
 
 app.get('/organizations', authMiddleware, async (req, res) => {
@@ -167,6 +169,7 @@ app.get('/attendance', authMiddleware, async (req, res) => {
 });
 
 app.use('/attendance', authMiddleware, attendanceRoutes);
+app.use('/reports', authMiddleware, reportsRoutes);
 
 app.get('/leave/requests', authMiddleware, (req, res) => res.json(leaveRequests));
 app.post('/leave/requests', authMiddleware, (req, res) => {
