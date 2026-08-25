@@ -6,7 +6,7 @@
     ? window.Capacitor.getPlatform()
     : '';
   const defaultBackendBase = nativePlatform === 'android'
-    ? 'http://10.0.2.2:4000'
+    ? 'http://192.168.1.18:4000'
     : nativePlatform === 'ios'
       ? 'http://localhost:4000'
       : 'http://localhost:4000';
