@@ -9,6 +9,7 @@ const attendanceRoutes = require('./modules/attendance/attendance.routes');
 const peopleRoutes = require('./modules/people/people.routes');
 const groupsRoutes = require('./modules/groups/groups.routes');
 const reportsRoutes = require('./modules/reports/reports.routes');
+const schedulesRoutes = require('./modules/schedules/schedules.routes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -170,6 +171,7 @@ app.get('/attendance', authMiddleware, async (req, res) => {
 
 app.use('/attendance', authMiddleware, attendanceRoutes);
 app.use('/reports', authMiddleware, reportsRoutes);
+app.use('/schedules', authMiddleware, schedulesRoutes);
 
 app.get('/leave/requests', authMiddleware, (req, res) => res.json(leaveRequests));
 app.post('/leave/requests', authMiddleware, (req, res) => {
