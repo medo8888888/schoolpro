@@ -22,7 +22,6 @@ if (!JWT_SECRET) {
 app.use(cors());
 app.use(express.json());
 
-const leaveRequests = [];
 
 function requireOrganizationId(req, res) {
   const organizationId = req.user && req.user.organizationId;
@@ -73,16 +72,43 @@ app.use('/attendance', authMiddleware, attendanceRoutes);
 app.use('/reports', authMiddleware, reportsRoutes);
 app.use('/schedules', authMiddleware, schedulesRoutes);
 
-app.get('/leave/requests', authMiddleware, (req, res) => res.json(leaveRequests));
-app.post('/leave/requests', authMiddleware, (req, res) => {
-  const request = {
-    id: `leave-${Date.now()}`,
-    employeeId: req.user.sub,
-    ...req.body,
-    status: 'pending'
-  };
-  leaveRequests.push(request);
-  res.status(201).json(request);
+app.get('/leave/requests', authMiddleware, async (req, res) => {
+  const organizationId = requireOrganizationId(req, res);
+  if (!organizationId) return;
+  try {
+    const result = await pool.query(
+      `SELECT id, employee_id, employee_name, reason, start_date, end_date, status, created_at
+       FROM leave_requests WHERE organization_id = $1 ORDER BY created_at DESC`,
+      [organizationId]
+    );
+    return res.json(result.rows.map((row) => ({
+      id: row.id,
+      employeeId: row.employee_id,
+      employeeName: row.employee_name,
+      reason: row.reason,
+      startDate: row.start_date,
+      endDate: row.end_date,
+      status: row.status
+    })));
+  } catch (error) {
+    return res.status(500).json({ message: 'Unable to fetch leave requests' });
+  }
+});
+app.post('/leave/requests', authMiddleware, async (req, res) => {
+  const organizationId = requireOrganizationId(req, res);
+  if (!organizationId) return;
+  const body = req.body || {};
+  const id = randomUUID();
+  try {
+    await pool.query(
+      `INSERT INTO leave_requests (id, organization_id, employee_id, employee_name, reason, start_date, end_date, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')`,
+      [id, organizationId, req.user.sub, body.employeeName || null, body.reason || null, body.startDate || null, body.endDate || null]
+    );
+    return res.status(201).json({ id, status: 'pending', ...body });
+  } catch (error) {
+    return res.status(500).json({ message: 'Unable to save leave request' });
+  }
 });
 
 function startServer(port, attempts = 0) {

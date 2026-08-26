@@ -98,6 +98,20 @@ async function ensureAuthSchema() {
   `);
 
   await pool.query(`
+    CREATE TABLE IF NOT EXISTS leave_requests (
+      id UUID PRIMARY KEY,
+      organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
+      employee_id UUID,
+      employee_name VARCHAR(255),
+      reason TEXT,
+      start_date DATE,
+      end_date DATE,
+      status VARCHAR(40) NOT NULL DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS attendance_events (
       id UUID PRIMARY KEY,
       organization_id UUID NOT NULL REFERENCES organizations(id) ON DELETE CASCADE,
