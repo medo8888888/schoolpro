@@ -23,7 +23,6 @@ app.use(cors());
 app.use(express.json());
 
 const leaveRequests = [];
-const schedules = [];
 
 function requireOrganizationId(req, res) {
   const organizationId = req.user && req.user.organizationId;
@@ -70,105 +69,6 @@ app.get('/organizations', authMiddleware, async (req, res) => {
   }
 });
 
-app.get('/employees', authMiddleware, async (req, res) => {
-  const organizationId = requireOrganizationId(req, res);
-  if (!organizationId) return;
-  try {
-    const result = await pool.query(
-      `SELECT id, name, email, department, role, status, shift, lat, lng
-       FROM employees
-       WHERE organization_id = $1
-       ORDER BY created_at DESC`,
-      [organizationId]
-    );
-    return res.json(result.rows);
-  } catch (error) {
-    return res.status(500).json({ message: 'Unable to fetch employees' });
-  }
-});
-
-app.post('/employees', authMiddleware, async (req, res) => {
-  const organizationId = requireOrganizationId(req, res);
-  if (!organizationId) return;
-
-  const payload = req.body || {};
-  const name = String(payload.name || '').trim();
-  if (!name) {
-    return res.status(400).json({ message: 'Employee name is required' });
-  }
-
-  const employee = {
-    id: randomUUID(),
-    organizationId,
-    name,
-    email: payload.email ? String(payload.email).trim().toLowerCase() : null,
-    department: payload.department || null,
-    role: payload.role || null,
-    status: payload.status || 'active',
-    shift: payload.shift || null,
-    lat: Number.isFinite(Number(payload.lat)) ? Number(payload.lat) : null,
-    lng: Number.isFinite(Number(payload.lng)) ? Number(payload.lng) : null
-  };
-
-  try {
-    await pool.query(
-      `INSERT INTO employees (id, organization_id, name, email, department, role, status, shift, lat, lng)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [
-        employee.id,
-        employee.organizationId,
-        employee.name,
-        employee.email,
-        employee.department,
-        employee.role,
-        employee.status,
-        employee.shift,
-        employee.lat,
-        employee.lng
-      ]
-    );
-    return res.status(201).json({
-      id: employee.id,
-      name: employee.name,
-      email: employee.email,
-      department: employee.department,
-      role: employee.role,
-      status: employee.status,
-      shift: employee.shift,
-      lat: employee.lat,
-      lng: employee.lng
-    });
-  } catch (error) {
-    return res.status(500).json({ message: 'Unable to create employee' });
-  }
-});
-
-app.get('/attendance', authMiddleware, async (req, res) => {
-  const organizationId = requireOrganizationId(req, res);
-  if (!organizationId) return;
-  try {
-    const result = await pool.query(
-      `SELECT id, employee_id, employee_name, type, status, event_time
-       FROM attendance_events
-       WHERE organization_id = $1
-       ORDER BY event_time DESC`,
-      [organizationId]
-    );
-
-    const rows = result.rows.map((item) => ({
-      id: item.id,
-      employeeId: item.employee_id,
-      employeeName: item.employee_name || 'Current Employee',
-      type: item.type,
-      time: new Date(item.event_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      status: item.status || 'Saved'
-    }));
-    return res.json(rows);
-  } catch (error) {
-    return res.status(500).json({ message: 'Unable to fetch attendance' });
-  }
-});
-
 app.use('/attendance', authMiddleware, attendanceRoutes);
 app.use('/reports', authMiddleware, reportsRoutes);
 app.use('/schedules', authMiddleware, schedulesRoutes);
@@ -183,37 +83,6 @@ app.post('/leave/requests', authMiddleware, (req, res) => {
   };
   leaveRequests.push(request);
   res.status(201).json(request);
-});
-
-app.get('/schedules', authMiddleware, (req, res) => res.json(schedules));
-app.post('/schedules', authMiddleware, (req, res) => {
-  const schedule = { id: `sched-${Date.now()}`, ...req.body };
-  schedules.push(schedule);
-  res.status(201).json(schedule);
-});
-
-app.get('/reports/attendance', authMiddleware, async (req, res) => {
-  const organizationId = requireOrganizationId(req, res);
-  if (!organizationId) return;
-  try {
-    const result = await pool.query(
-      `SELECT id, employee_name, type, status, event_time
-       FROM attendance_events
-       WHERE organization_id = $1
-       ORDER BY event_time DESC`,
-      [organizationId]
-    );
-    const rows = result.rows.map((item) => ({
-      id: item.id,
-      employeeName: item.employee_name || 'Unknown',
-      type: item.type || 'Activity',
-      time: new Date(item.event_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      status: item.status || 'Saved'
-    }));
-    return res.json({ total: rows.length, verified: rows.filter((item) => item.status === 'Verified').length, rows });
-  } catch (error) {
-    return res.status(500).json({ message: 'Unable to build attendance report' });
-  }
 });
 
 function startServer(port, attempts = 0) {

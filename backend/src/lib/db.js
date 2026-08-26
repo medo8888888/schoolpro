@@ -105,10 +105,15 @@ async function ensureAuthSchema() {
       employee_name VARCHAR(255),
       type VARCHAR(80) NOT NULL,
       status VARCHAR(80) DEFAULT 'Saved',
+      lat DOUBLE PRECISION,
+      lng DOUBLE PRECISION,
       event_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await pool.query(`ALTER TABLE attendance_events ADD COLUMN IF NOT EXISTS lat DOUBLE PRECISION`);
+  await pool.query(`ALTER TABLE attendance_events ADD COLUMN IF NOT EXISTS lng DOUBLE PRECISION`);
 
   const adminOrgResult = await pool.query(
     `SELECT id FROM organizations WHERE name = $1 LIMIT 1`,
