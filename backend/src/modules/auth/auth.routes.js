@@ -354,3 +354,12 @@ router.post('/manager/pending-users/:userId/reject', async (req, res) => {
                           );
                     if (!result.rows.length) {
                             return res.status(404).json({ message: 'User not found in your manager queue' });
+
+    }
+    return res.json({ ok: true, message: 'User rejected by manager' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Unable to reject user' });
+  }
+});
+
+module.exports = router;
