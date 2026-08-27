@@ -5,11 +5,7 @@
   const nativePlatform = window.Capacitor && typeof window.Capacitor.getPlatform === 'function'
     ? window.Capacitor.getPlatform()
     : '';
-  const defaultBackendBase = nativePlatform === 'android'
-    ? 'http://172.17.198.39:4000'
-    : nativePlatform === 'ios'
-      ? 'http://localhost:4000'
-      : 'http://localhost:4000';
+  const defaultBackendBase = 'http://192.168.196.135:4000';
   const BACKEND_BASE = String(window.FIELDTRACK_API_BASE || defaultBackendBase).replace(/\/$/, '');
   window.__FIELDTRACK_API_BASE = BACKEND_BASE;
 
