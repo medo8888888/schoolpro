@@ -111,6 +111,8 @@ app.post('/leave/requests', authMiddleware, async (req, res) => {
   }
 });
 
+module.exports = app;
+
 function startServer(port, attempts = 0) {
   const server = app.listen(port, () => {
     console.log(`Workforce backend running on http://localhost:${port}`);
